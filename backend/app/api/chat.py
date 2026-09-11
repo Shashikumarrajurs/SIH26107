@@ -107,6 +107,7 @@ def post_chat_message(req: ChatRequest, db: Session = Depends(get_db)):
     
     cert_guidance = {
         "scheme": tech_view.get("certification_scheme", "Scheme I (ISI Mark)"),
+        "scheme_name": tech_view.get("certification_scheme", "Scheme I (ISI Mark)"),
         "governing_order": tech_view.get("governing_order", "Central Government Notification")
     }
 

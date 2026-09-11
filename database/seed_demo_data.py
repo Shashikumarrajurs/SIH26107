@@ -615,6 +615,51 @@ def seed():
             "parameter": "Pressure release occurs between 130 kPa and 200 kPa.",
             "methodology": "Pneumatic pressure ramping with primary vent intentionally plugged.",
             "acceptance_criteria": "Safety plug melts or gasket releases reliably before reaching 200 kPa."
+        },
+        {
+            "id": "tst_13252_1",
+            "standard_id": "std_13252",
+            "test_name": "Electric Shock & Dielectric Strength Test",
+            "clause": "Clause 2.1 & 5.2",
+            "parameter": "Dielectric breakdown protection withstanding 1500V AC between primary circuits and touchable parts.",
+            "methodology": "High-voltage breakdown tester applying ramped AC voltage for 60 seconds.",
+            "acceptance_criteria": "Zero dielectric breakdown or insulation flashover."
+        },
+        {
+            "id": "tst_13252_2",
+            "standard_id": "std_13252",
+            "test_name": "Temperature Rise & Thermal Overload Test",
+            "clause": "Clause 4.5",
+            "parameter": "Thermal dissipation under peak operational load; casing temp <= 45°C.",
+            "methodology": "Multi-channel calibrated thermocouple data acquisition in 25°C ambient chamber.",
+            "acceptance_criteria": "Surface and internal temperatures strictly within maximum permissible limits."
+        },
+        {
+            "id": "tst_13252_3",
+            "standard_id": "std_13252",
+            "test_name": "Drop & Mechanical Enclosure Durability Test",
+            "clause": "Clause 4.2",
+            "parameter": "Enclosure integrity against accidental impact and mechanical drop from 1.0 meter.",
+            "methodology": "Repeated mechanical drops in multiple axes onto rigid steel plate.",
+            "acceptance_criteria": "No hazardous parts exposed; structural integrity maintained."
+        },
+        {
+            "id": "tst_16046_1",
+            "standard_id": "std_16046_2",
+            "test_name": "Lithium Battery Overcharge & Thermal Abuse Test",
+            "clause": "Clause 7.3 & 7.2",
+            "parameter": "Cell stability under constant current overcharge and 130°C thermal exposure.",
+            "methodology": "Controlled charge cycle to 2.0x rated voltage in explosion-proof chamber.",
+            "acceptance_criteria": "Zero fire, zero explosion, zero venting of toxic electrolytes."
+        },
+        {
+            "id": "tst_16333_1",
+            "standard_id": "std_16333_3",
+            "test_name": "22 Scheduled Indian Languages Display & Input Test",
+            "clause": "Clause 4.2",
+            "parameter": "Full rendering of fonts, character sets, and text input for all 22 official Indian languages.",
+            "methodology": "Linguistic glyph and virtual keypad verification across SMS, contacts, and UI.",
+            "acceptance_criteria": "100% compliant rendering and message composing capability."
         }
     ]
 

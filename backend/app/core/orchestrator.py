@@ -271,9 +271,21 @@ class QueryOrchestrator:
             })
 
         # Fetch tests from DB
-        test_rows = db.query(TestingRequirementModel).filter(
-            TestingRequirementModel.standard_id.contains(clean_base.lower().replace(" ", "_"))
-        ).all()
+        matched_std = db.query(StandardModel).filter(
+            StandardModel.standard_number.ilike(f"%{clean_base}%")
+        ).first()
+        
+        test_rows = []
+        if matched_std:
+            test_rows = db.query(TestingRequirementModel).filter(
+                TestingRequirementModel.standard_id == matched_std.id
+            ).all()
+        
+        if not test_rows:
+            test_rows = db.query(TestingRequirementModel).filter(
+                TestingRequirementModel.standard_id.contains(clean_base.lower().replace(" ", "_"))
+            ).all()
+
         testing_matrix = [
             {
                 "test_name": t.test_name,

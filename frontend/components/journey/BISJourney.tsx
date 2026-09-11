@@ -10,15 +10,25 @@ import {
   ChevronUp,
   ExternalLink,
   ShieldAlert,
-  Sparkles
+  Sparkles,
+  HelpCircle,
+  Award,
+  Layers,
+  FlaskConical,
+  Building,
+  FileCheck2,
+  FileText
 } from "lucide-react";
 
 export interface JourneyStep {
   step_number: number;
+  short_label?: string;
   title: string;
   status: "COMPLETED" | "IN_PROGRESS" | "ACTION_REQUIRED" | "PENDING" | string;
   summary: string;
   details: string;
+  mark?: string;
+  plain_language?: string;
 }
 
 export interface BISJourneyProps {
@@ -30,12 +40,34 @@ export interface BISJourneyProps {
   };
 }
 
+const STEP_FALLBACK_LABELS: Record<number, string> = {
+  1: "1. Scope",
+  2: "2. Standard",
+  3: "3. Scheme",
+  4: "4. Testing",
+  5: "5. Find Labs",
+  6: "6. BIS License"
+};
+
+const STEP_ICONS: Record<number, React.ReactNode> = {
+  1: <Layers className="w-3.5 h-3.5" />,
+  2: <FileText className="w-3.5 h-3.5" />,
+  3: <Award className="w-3.5 h-3.5" />,
+  4: <FlaskConical className="w-3.5 h-3.5" />,
+  5: <Building className="w-3.5 h-3.5" />,
+  6: <FileCheck2 className="w-3.5 h-3.5" />
+};
+
 export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showPlainLanguage, setShowPlainLanguage] = useState(true);
 
   if (!journey || !journey.steps || journey.steps.length === 0) return null;
 
-  const currentStep = journey.steps.find((s) => s.step_number === (journey.current_stage || 2)) || journey.steps[1] || journey.steps[0];
+  const currentStep =
+    journey.steps.find((s) => s.step_number === (journey.current_stage || 2)) ||
+    journey.steps[1] ||
+    journey.steps[0];
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden transition-all">
@@ -82,15 +114,20 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
         </div>
       </div>
 
-      {/* Connected Horizontal Timeline (Always fits cleanly on any screen width) */}
-      <div className="px-4 py-3 bg-white">
-        <div className="flex items-center justify-between relative">
-          {/* Background Connector Bar */}
-          <div className="absolute left-4 right-4 top-3.5 h-0.5 bg-slate-200 z-0"></div>
+      {/* Connected Horizontal Timeline with Clean, Full Labels */}
+      <div className="px-4 py-3.5 bg-white">
+        <div className="flex items-center justify-between relative px-2">
+          {/* Background Connector Line */}
+          <div className="absolute left-6 right-6 top-3.5 h-0.5 bg-slate-200 z-0"></div>
 
           {journey.steps.map((step) => {
             const isDone = step.status === "COMPLETED";
-            const isCurrent = step.status === "IN_PROGRESS" || step.step_number === (journey.current_stage || 2);
+            const isCurrent =
+              step.status === "IN_PROGRESS" || step.step_number === (journey.current_stage || 2);
+            const label =
+              step.short_label ||
+              STEP_FALLBACK_LABELS[step.step_number] ||
+              `Step 0${step.step_number}`;
 
             return (
               <div
@@ -117,13 +154,13 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
                   )}
                 </div>
 
-                {/* Node Label (Short title) */}
+                {/* Full, legible Short Label without truncation cut-offs */}
                 <span
-                  className={`text-[10px] mt-1 font-medium text-center truncate max-w-[80px] hidden sm:block ${
-                    isCurrent ? "font-bold text-trust" : isDone ? "text-slate-700" : "text-slate-400"
+                  className={`text-[11px] mt-1.5 font-semibold text-center whitespace-nowrap hidden sm:block ${
+                    isCurrent ? "font-bold text-trust" : isDone ? "text-slate-800" : "text-slate-400"
                   }`}
                 >
-                  {step.title.split(" ")[0]}
+                  {label}
                 </span>
               </div>
             );
@@ -132,62 +169,129 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
 
         {/* Active Stage Callout Bar */}
         {currentStep && (
-          <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex items-center space-x-2 text-slate-700">
-              <span className="font-bold text-navy-900 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center space-x-2 text-slate-700 min-w-0">
+              <span className="font-bold text-navy-900 bg-slate-100 px-2 py-0.5 rounded text-[11px] shrink-0">
                 Stage {currentStep.step_number}: {currentStep.title}
               </span>
-              <span className="text-slate-500 truncate max-w-md hidden md:inline">
-                {currentStep.summary} — {currentStep.details}
+              <span className="text-slate-600 truncate hidden md:inline text-[11px]">
+                {currentStep.plain_language || currentStep.summary}
               </span>
             </div>
-            <span className="text-[11px] font-semibold text-trust bg-trust/10 px-2 py-0.5 rounded">
-              {currentStep.status === "IN_PROGRESS" ? "Operative Active Stage" : currentStep.status}
+            <span className="text-[10px] font-bold text-trust bg-trust/10 px-2 py-0.5 rounded uppercase tracking-wider shrink-0">
+              {currentStep.status === "IN_PROGRESS" ? "Active In Progress" : currentStep.status}
             </span>
           </div>
         )}
       </div>
 
-      {/* Expanded Grid (Only when user toggles 'View All 6 Stages') */}
+      {/* Expanded 6-Stage Grid with Plain-Language Guidance for Everyday Citizens */}
       {isExpanded && (
-        <div className="p-4 bg-slate-50 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 animate-fadeIn">
-          {journey.steps.map((step) => {
-            const isDone = step.status === "COMPLETED";
-            const isCurrent = step.status === "IN_PROGRESS" || step.step_number === (journey.current_stage || 2);
+        <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-3 animate-fadeIn">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-1.5 text-xs text-slate-600 font-medium">
+              <HelpCircle className="w-3.5 h-3.5 text-trust" />
+              <span>Step-by-step guidance explained in simple terms for citizens, MSMEs, and startups.</span>
+            </div>
+            <button
+              onClick={() => setShowPlainLanguage(!showPlainLanguage)}
+              className="text-[11px] text-trust hover:underline font-bold"
+            >
+              {showPlainLanguage ? "Show Official Details" : "Show Plain English Summary"}
+            </button>
+          </div>
 
-            return (
-              <div
-                key={step.step_number}
-                className={`p-3 rounded-lg border text-xs flex flex-col justify-between transition-all bg-white shadow-xs ${
-                  isDone
-                    ? "border-emerald-300 bg-emerald-50/20"
-                    : isCurrent
-                    ? "border-trust ring-1 ring-trust/30 bg-trust/5"
-                    : "border-slate-200 text-slate-500"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold uppercase mb-1">
-                    <span className={isCurrent ? "text-trust" : isDone ? "text-emerald-700" : "text-slate-400"}>
-                      Step 0{step.step_number}
-                    </span>
-                    {isDone ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    ) : isCurrent ? (
-                      <Clock className="w-3.5 h-3.5 text-trust animate-pulse" />
-                    ) : (
-                      <AlertCircle className="w-3.5 h-3.5 text-slate-300" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {journey.steps.map((step) => {
+              const isDone = step.status === "COMPLETED";
+              const isCurrent =
+                step.status === "IN_PROGRESS" || step.step_number === (journey.current_stage || 2);
+
+              return (
+                <div
+                  key={step.step_number}
+                  className={`p-3.5 rounded-xl border text-xs flex flex-col justify-between transition-all bg-white shadow-xs ${
+                    isDone
+                      ? "border-emerald-300 bg-emerald-50/15"
+                      : isCurrent
+                      ? "border-trust ring-2 ring-trust/20 bg-trust/5 shadow-sm"
+                      : "border-slate-200 text-slate-500"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between text-[11px] font-bold">
+                      <span
+                        className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-md ${
+                          isDone
+                            ? "bg-emerald-100 text-emerald-800"
+                            : isCurrent
+                            ? "bg-trust text-white"
+                            : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {STEP_ICONS[step.step_number]}
+                        <span>Step 0{step.step_number}</span>
+                      </span>
+
+                      <span className="text-[10px] uppercase font-bold flex items-center gap-1">
+                        {isDone ? (
+                          <span className="text-emerald-700 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Completed
+                          </span>
+                        ) : isCurrent ? (
+                          <span className="text-trust flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 animate-pulse" />
+                            In Progress
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">Next Action</span>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Step Title */}
+                    <h4 className="font-bold text-navy-900 text-xs">
+                      {step.title}
+                    </h4>
+
+                    {/* Plain Language Box (For Common People) */}
+                    {showPlainLanguage && step.plain_language && (
+                      <div className="p-2 bg-amber-50/70 border border-amber-200/70 rounded-lg text-[11px] text-amber-950 leading-snug">
+                        <span className="font-bold text-amber-900 block text-[10px] uppercase tracking-wider mb-0.5">
+                          💡 What this means for you:
+                        </span>
+                        {step.plain_language}
+                      </div>
+                    )}
+
+                    {/* Official Requirement */}
+                    <div className="text-[11px] font-medium text-navy-900 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                        BIS Requirement:
+                      </span>
+                      {step.summary}
+                    </div>
+                  </div>
+
+                  {/* Technical Procedure / Mark */}
+                  <div className="mt-2.5 pt-2 border-t border-slate-100 space-y-1">
+                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                      {step.details}
+                    </p>
+                    {step.mark && (
+                      <div className="pt-1">
+                        <span className="inline-block bg-trust/10 text-trust text-[9px] font-bold px-1.5 py-0.5 rounded font-mono">
+                          {step.mark}
+                        </span>
+                      </div>
                     )}
                   </div>
-                  <h4 className="font-bold text-navy-900 text-xs mb-1">{step.title}</h4>
-                  <p className="text-[11px] text-slate-600">{step.summary}</p>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 font-mono">
-                  {step.details}
-                </p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
