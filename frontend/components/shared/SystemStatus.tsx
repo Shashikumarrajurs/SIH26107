@@ -17,11 +17,20 @@ export function SystemStatusBadge() {
   useEffect(() => {
     const check = async () => {
       try {
-        const res = await fetch("/api/health", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          setHealth(data);
+        let data = null;
+        try {
+          const res = await fetch("/api/health", { cache: "no-store" });
+          if (res.ok) data = await res.json();
+        } catch {}
+        
+        if (!data) {
+          try {
+            const res = await fetch("http://127.0.0.1:8000/health", { cache: "no-store" });
+            if (res.ok) data = await res.json();
+          } catch {}
         }
+
+        setHealth(data);
       } catch {
         setHealth(null);
       } finally {
@@ -29,7 +38,7 @@ export function SystemStatusBadge() {
       }
     };
     check();
-    const interval = setInterval(check, 30000);
+    const interval = setInterval(check, 15000);
     return () => clearInterval(interval);
   }, []);
 
