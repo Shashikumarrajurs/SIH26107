@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { StatutoryHeader } from "@/components/layout/StatutoryHeader";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -24,6 +24,8 @@ import {
   Clock,
   ExternalLink,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Eye,
   Sliders,
   PanelLeftClose,
@@ -32,6 +34,68 @@ import {
   PanelRightOpen,
   X
 } from "lucide-react";
+
+function renderInlineMarkdown(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className="font-bold text-navy-900">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
+function FormattedMessage({ text }: { text: string }) {
+  if (!text) return null;
+  const blocks = text.split(/\n\n+/);
+
+  return (
+    <div className="space-y-2.5 text-xs leading-relaxed">
+      {blocks.map((block, bIdx) => {
+        const trimmed = block.trim();
+        if (!trimmed) return null;
+
+        if (trimmed.startsWith("### ")) {
+          const headingText = trimmed.replace(/^###\s+/, "");
+          return (
+            <h4 key={bIdx} className="font-bold text-xs text-navy-900 pt-1 pb-0.5 border-b border-slate-200">
+              {renderInlineMarkdown(headingText)}
+            </h4>
+          );
+        }
+
+        const lines = trimmed.split("\n");
+        const isList = lines.length > 1 && lines.every((l) => /^\s*([*\-]|\d+\.)\s+/.test(l));
+
+        if (isList) {
+          return (
+            <ul key={bIdx} className="space-y-1 my-1 pl-1">
+              {lines.map((l, lIdx) => {
+                const clean = l.replace(/^\s*([*\-]|\d+\.)\s+/, "");
+                return (
+                  <li key={lIdx} className="flex items-start space-x-2 text-slate-800">
+                    <span className="text-trust font-bold select-none">•</span>
+                    <span className="flex-1">{renderInlineMarkdown(clean)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          );
+        }
+
+        return (
+          <p key={bIdx} className="text-slate-800 whitespace-pre-line font-normal">
+            {renderInlineMarkdown(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function AssistantPage() {
   const [inputMessage, setInputMessage] = useState("");
@@ -43,6 +107,8 @@ export default function AssistantPage() {
   // Panel collapse/expand states for clean, unconstrained layout
   const [showProfile, setShowProfile] = useState(false);
   const [showEvidence, setShowEvidence] = useState(false);
+  const [roadmapExpanded, setRoadmapExpanded] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<any[]>([
     {
@@ -54,6 +120,10 @@ export default function AssistantPage() {
       payload: null
     }
   ]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
   const [productProfile, setProductProfile] = useState<any>({
     product: "Mobile Phones & Consumer Electronics",
@@ -179,7 +249,7 @@ export default function AssistantPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100">
+    <div className="h-screen flex flex-col bg-slate-100 overflow-hidden">
       <StatutoryHeader currentLanguage={language} onLanguageChange={(l) => setLanguage(l)} />
 
       <div className="flex-1 flex w-full overflow-hidden">
@@ -187,7 +257,7 @@ export default function AssistantPage() {
         <Sidebar />
 
         {/* Main Content Area */}
-        <main className="flex-1 flex overflow-hidden min-w-0 h-[calc(100vh-85px)]">
+        <main className="flex-1 flex overflow-hidden min-w-0">
           
           {/* OPTIONAL LEFT DRAWER: Product Profile & Trust Specs (Collapsible) */}
           {showProfile && (
@@ -311,9 +381,27 @@ export default function AssistantPage() {
               </div>
             </div>
 
-            {/* BIS Conformity Journey Banner (Dedicated full-width row) */}
-            <div className="p-3 bg-slate-50/70 border-b border-slate-200">
-              <BISJourneyStepper journey={currentJourney} />
+            {/* BIS Conformity Journey Banner (Dedicated full-width row with collapse toggle) */}
+            <div className="bg-slate-50/90 border-b border-slate-200 shrink-0">
+              <div className="px-4 py-1.5 flex items-center justify-between bg-slate-100/70 border-b border-slate-200/60 text-[11px] font-semibold text-navy-900">
+                <span className="flex items-center space-x-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-trust" />
+                  <span>Conformity Roadmap: <span className="text-trust font-bold">{currentJourney?.product_name || "Product"}</span></span>
+                </span>
+                <button
+                  onClick={() => setRoadmapExpanded(!roadmapExpanded)}
+                  className="text-slate-500 hover:text-navy-900 flex items-center space-x-1 text-[11px] font-medium transition-colors"
+                  title={roadmapExpanded ? "Collapse Roadmap banner" : "Expand Roadmap banner"}
+                >
+                  <span>{roadmapExpanded ? "Collapse" : "Expand Roadmap"}</span>
+                  {roadmapExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              {roadmapExpanded && (
+                <div className="p-3">
+                  <BISJourneyStepper journey={currentJourney} />
+                </div>
+              )}
             </div>
 
             {/* Quick Scenario Queries Bar (Horizontal scrollable chips) */}
@@ -372,28 +460,31 @@ export default function AssistantPage() {
                       )}
                     </div>
 
-                    {/* Level 1 View Content */}
-                    {msg.sender === "assistant" && viewLevel === "level1" && msg.payload?.level1_consumer_view ? (
-                      <div className="space-y-3">
-                        <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-lg text-emerald-950">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block mb-1">
-                            Plain-Language Consumer Guidance:
-                          </span>
-                          <p className="text-xs leading-relaxed font-normal">
-                            {msg.payload.level1_consumer_view.summary}
-                          </p>
-                        </div>
+                    {/* Main AI Regulatory Answer Body */}
+                    <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed font-normal">
+                      {msg.sender === "user" ? (
+                        <div className="text-white text-xs whitespace-pre-wrap">{msg.content}</div>
+                      ) : (
+                        <FormattedMessage text={msg.content} />
+                      )}
+                    </div>
+
+                    {/* Level 1 Consumer Guidance Callout Card */}
+                    {msg.sender === "assistant" && viewLevel === "level1" && msg.payload?.level1_consumer_view && (
+                      <div className="mt-3 pt-2.5 border-t border-slate-200/80 space-y-2">
                         {msg.payload.level1_consumer_view.what_to_look_for && (
-                          <div className="text-xs text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
-                            <strong className="text-navy-900">What to look for on packaging:</strong>{" "}
-                            {msg.payload.level1_consumer_view.what_to_look_for}
+                          <div className="bg-emerald-50/90 border border-emerald-200 p-3 rounded-lg flex items-start space-x-2 text-xs text-emerald-950">
+                            <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                            <div>
+                              <span className="font-bold text-emerald-900 block text-[11px] uppercase tracking-wide">
+                                Consumer Packaging Verification
+                              </span>
+                              <p className="text-xs text-emerald-900 font-medium mt-0.5">
+                                {msg.payload.level1_consumer_view.what_to_look_for}
+                              </p>
+                            </div>
                           </div>
                         )}
-                      </div>
-                    ) : (
-                      /* Main Raw Answer Text */
-                      <div className="prose prose-sm max-w-none font-normal whitespace-pre-wrap leading-relaxed">
-                        {msg.content}
                       </div>
                     )}
 
@@ -509,6 +600,9 @@ export default function AssistantPage() {
                   </div>
                 </div>
               )}
+
+              {/* Scroll Anchor */}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Chat Input Bar */}
