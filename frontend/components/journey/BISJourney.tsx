@@ -69,6 +69,16 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
     journey.steps[1] ||
     journey.steps[0];
 
+  const handleStepNodeClick = (stepNum: number) => {
+    setIsExpanded(true);
+    setTimeout(() => {
+      const el = document.getElementById(`journey-step-card-${stepNum}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }, 80);
+  };
+
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden transition-all">
       {/* Header Bar */}
@@ -133,7 +143,8 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
               <div
                 key={step.step_number}
                 className="flex flex-col items-center relative z-10 group cursor-pointer"
-                onClick={() => setIsExpanded(true)}
+                onClick={() => handleStepNodeClick(step.step_number)}
+                title={`Click to view Stage ${step.step_number}: ${step.title}`}
               >
                 {/* Node Circle */}
                 <div
@@ -185,10 +196,10 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
         )}
       </div>
 
-      {/* Expanded 6-Stage Grid with Plain-Language Guidance for Everyday Citizens */}
+      {/* Expanded 6-Stage Grid with Plain-Language Guidance for Everyday Citizens - SCROLLABLE */}
       {isExpanded && (
-        <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-3 animate-fadeIn">
-          <div className="flex items-center justify-between">
+        <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-3 animate-fadeIn max-h-[46vh] sm:max-h-[420px] overflow-y-auto pr-2 scroll-smooth">
+          <div className="flex items-center justify-between sticky top-0 bg-slate-50/95 backdrop-blur-xs py-1 z-10 border-b border-slate-200/60 mb-2">
             <div className="flex items-center space-x-1.5 text-xs text-slate-600 font-medium">
               <HelpCircle className="w-3.5 h-3.5 text-trust" />
               <span>Step-by-step guidance explained in simple terms for citizens, MSMEs, and startups.</span>
@@ -209,8 +220,9 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
 
               return (
                 <div
+                  id={`journey-step-card-${step.step_number}`}
                   key={step.step_number}
-                  className={`p-3.5 rounded-xl border text-xs flex flex-col justify-between transition-all bg-white shadow-xs ${
+                  className={`p-3.5 rounded-xl border text-xs flex flex-col justify-between transition-all bg-white shadow-xs scroll-mt-3 ${
                     isDone
                       ? "border-emerald-300 bg-emerald-50/15"
                       : isCurrent
@@ -291,6 +303,19 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
                 </div>
               );
             })}
+          </div>
+
+          {/* Bottom Scroll Assistance Bar */}
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200/80 sticky bottom-0 bg-slate-50/95 backdrop-blur-xs py-1">
+            <span className="flex items-center gap-1 font-medium text-slate-600">
+              <span>↕️ Scroll to view all 6 stages (Stages 4–6: Testing, NABL Labs & License Grant)</span>
+            </span>
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="text-trust hover:underline font-bold text-[11px]"
+            >
+              Collapse to Compact View
+            </button>
           </div>
         </div>
       )}
