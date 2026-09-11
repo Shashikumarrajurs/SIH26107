@@ -160,7 +160,8 @@ def get_regulatory_glossary(lang: str = Query("en", description="ISO language co
         "language": selected_lang,
         "language_name": SUPPORTED_LANGUAGES.get(selected_lang, "English"),
         "total_terms": len(terms),
-        "glossary": terms
+        "glossary": terms,
+        "terms": terms
     }
 
 @router.get("/process/steps")
