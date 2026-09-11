@@ -19,7 +19,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 # -------------------------------------------------------------------
 _RATE_STORE: Dict[str, Tuple[int, float]] = defaultdict(lambda: (0, 0.0))
 
-RATE_LIMIT_CALLS = 60       # max requests
+RATE_LIMIT_CALLS = 300      # max requests (smooth concurrent UI + API traffic)
 RATE_LIMIT_WINDOW = 60.0    # per 60 seconds
 
 
