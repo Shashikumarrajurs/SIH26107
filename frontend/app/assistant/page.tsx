@@ -9,7 +9,7 @@ import { VoiceInput } from "@/components/shared/Controls";
 import { ProductProfileCard } from "@/components/assistant/ProductProfile";
 import { EvidencePanel, EvidenceItem } from "@/components/assistant/EvidencePanel";
 import { BISJourneyStepper } from "@/components/journey/BISJourney";
-import { sendMessage } from "@/lib/api";
+import { sendMessage, getBISGlossary } from "@/lib/api";
 import {
   Send,
   Sparkles,
@@ -32,7 +32,18 @@ import {
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
-  X
+  X,
+  ShoppingCart,
+  Rocket,
+  Factory,
+  BookOpen,
+  CheckSquare,
+  Square,
+  GitCompare,
+  AlertTriangle,
+  CheckCircle,
+  HelpCircle,
+  Info
 } from "lucide-react";
 
 function renderInlineMarkdown(text: string) {
@@ -103,6 +114,16 @@ export default function AssistantPage() {
   const [language, setLanguage] = useState("en");
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
   const [viewLevel, setViewLevel] = useState<"level1" | "level2">("level1");
+  const [persona, setPersona] = useState<"consumer" | "startup" | "builder">("consumer");
+
+  // Interactive Glossary Modal State
+  const [showGlossary, setShowGlossary] = useState(false);
+  const [glossaryTerms, setGlossaryTerms] = useState<any[]>([]);
+  const [selectedTerm, setSelectedTerm] = useState<any | null>(null);
+  const [loadingGlossary, setLoadingGlossary] = useState(false);
+
+  // Interactive Startup Checklist Tracking
+  const [checkedChecklist, setCheckedChecklist] = useState<Record<string, boolean>>({});
 
   // Panel collapse/expand states for clean, unconstrained layout
   const [showProfile, setShowProfile] = useState(false);
@@ -124,6 +145,23 @@ export default function AssistantPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (showGlossary) {
+      setLoadingGlossary(true);
+      getBISGlossary(language)
+        .then((data) => {
+          if (data.terms) {
+            setGlossaryTerms(data.terms);
+            if (data.terms.length > 0 && !selectedTerm) {
+              setSelectedTerm(data.terms[0]);
+            }
+          }
+        })
+        .catch((err) => console.warn("Could not load glossary", err))
+        .finally(() => setLoadingGlossary(false));
+    }
+  }, [showGlossary, language]);
 
   const [productProfile, setProductProfile] = useState<any>({
     product: "Mobile Phones & Consumer Electronics",
@@ -173,25 +211,33 @@ export default function AssistantPage() {
     ]
   });
 
-  // Check URL query on mount
+  // Check URL query & persona on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
+      const p = params.get("persona");
+      let activeP: "consumer" | "startup" | "builder" = "consumer";
+      if (p === "consumer" || p === "startup" || p === "builder") {
+        setPersona(p);
+        activeP = p;
+      }
       const q = params.get("q");
       if (q) {
-        handleSend(q);
+        handleSend(q, activeP);
       }
     }
   }, []);
 
-  const handleSend = async (customText?: string) => {
+  const handleSend = async (customText?: string, overridePersona?: "consumer" | "startup" | "builder") => {
     const textToSend = customText || inputMessage;
     if (!textToSend.trim() || isLoading) return;
+    const activePersona = overridePersona || persona;
 
     const userMsgObj = {
       id: `usr_${Date.now()}`,
       sender: "user",
-      content: textToSend
+      content: textToSend,
+      persona: activePersona
     };
 
     setMessages((prev) => [...prev, userMsgObj]);
@@ -199,7 +245,7 @@ export default function AssistantPage() {
     setIsLoading(true);
 
     try {
-      const response = await sendMessage(textToSend, conversationId, language);
+      const response = await sendMessage(textToSend, conversationId, language, undefined, activePersona);
       
       if (response.conversation_id) setConversationId(response.conversation_id);
       if (response.product_profile) setProductProfile(response.product_profile);
@@ -239,12 +285,13 @@ export default function AssistantPage() {
   };
 
   const quickPrompts = [
-    { label: "📱 Mobile Phone (Compliance Graph)", query: "mobile" },
-    { label: "❓ Is BIS mandatory for mobile?", query: "Is BIS mandatory for mobile phones?" },
-    { label: "🔄 Latest Changes (Mobile)", query: "Show latest changes for mobile phones." },
-    { label: "📜 Historical IS 13252:2003", query: "old mobile standard IS 13252:2003" },
-    { label: "🍲 Pressure Cooker (IS 2347)", query: "What standard applies to domestic pressure cookers?" },
-    { label: "✨ Gold Hallmarking HUID", query: "How does 6-digit HUID hallmarking work for gold jewellery?" },
+    { label: "📱 Mobile Phone", query: "mobile" },
+    { label: "🛒 Consumer: Pressure Cooker BIS?", query: "Is BIS mandatory for pressure cookers?" },
+    { label: "🚀 Startup: 14-Point Checklist", query: "I want to manufacture pressure cookers. What should I do?" },
+    { label: "🏭 Builder: Testing Matrix", query: "Which standard and tests apply to domestic pressure cookers?" },
+    { label: "⚖️ Judge Demo: Clause 5.2 Diff", query: "What changed in the latest version of Clause 5.2?" },
+    { label: "ಕನ್ನಡ: ಪ್ರೆಶರ್ ಕುಕ್ಕರ್", query: "ಈ ಪ್ರೆಶರ್ ಕುಕ್ಕರ್ಗೆ BIS ಬೇಕಾ?" },
+    { label: "हिंदी: मोबाइल जरूरी?", query: "मोबाइल के लिए BIS जरूरी है क्या?" },
     { label: "💧 Water Bottle (IS 17803)", query: "What standard applies to stainless steel water bottles?" }
   ];
 
@@ -328,32 +375,81 @@ export default function AssistantPage() {
 
                 <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
 
-                {/* Status Pills */}
-                <span className="hidden lg:inline-flex items-center space-x-1 text-[11px] font-medium text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded-md">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                  <span>SIH26107 Statutory Grounding</span>
-                </span>
+                {/* 3-Way Persona Switcher (Judge Requirement: Consumer, Startup/MSME, Product Builder) */}
+                <div className="flex items-center bg-white border border-slate-300 p-0.5 rounded-lg shadow-2xs">
+                  <button
+                    onClick={() => setPersona("consumer")}
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center space-x-1 ${
+                      persona === "consumer"
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : "text-slate-600 hover:text-navy-900"
+                    }`}
+                    title="Consumer: Plain-language, packaging check & verification"
+                  >
+                    <ShoppingCart className="w-3 h-3" />
+                    <span>Consumer</span>
+                  </button>
+                  <button
+                    onClick={() => setPersona("startup")}
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center space-x-1 ${
+                      persona === "startup"
+                        ? "bg-saffron text-navy-900 shadow-xs"
+                        : "text-slate-600 hover:text-navy-900"
+                    }`}
+                    title="Startup / MSME: 14-Point Practical Checklist & Manufacturing Route"
+                  >
+                    <Rocket className="w-3 h-3" />
+                    <span>Startup / MSME</span>
+                  </button>
+                  <button
+                    onClick={() => setPersona("builder")}
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center space-x-1 ${
+                      persona === "builder"
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "text-slate-600 hover:text-navy-900"
+                    }`}
+                    title="Product Builder: Technical clauses, limits & testing standards"
+                  >
+                    <Factory className="w-3 h-3" />
+                    <span>Builder</span>
+                  </button>
+                </div>
               </div>
 
-              {/* View Switcher and Evidence Toggle */}
+              {/* View Switcher, Glossary Button, and Evidence Toggle */}
               <div className="flex items-center space-x-2">
+                {/* Glossary Feature Button */}
+                <button
+                  onClick={() => setShowGlossary(!showGlossary)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all border ${
+                    showGlossary
+                      ? "bg-purple-900 text-white border-purple-900 shadow-xs"
+                      : "bg-white text-purple-900 hover:bg-purple-50 border-purple-200 shadow-2xs"
+                  }`}
+                  title="What Does This BIS Term Mean? (Localized Glossary)"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-purple-600" />
+                  <span className="hidden sm:inline">What Does This BIS Term Mean?</span>
+                  <span className="sm:hidden">BIS Glossary</span>
+                </button>
+
                 {/* Level 1 / Level 2 Switcher */}
                 <div className="flex items-center bg-white border border-slate-300 p-0.5 rounded-lg shadow-2xs">
                   <button
                     onClick={() => setViewLevel("level1")}
-                    className={`px-3 py-1 rounded text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center space-x-1 ${
                       viewLevel === "level1"
                         ? "bg-navy-900 text-white shadow-xs"
                         : "text-slate-600 hover:text-navy-900"
                     }`}
-                    title="Plain-language summary for consumers"
+                    title="Plain-language summary for normal persons"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    <span>Level 1: Consumer</span>
+                    <span>Summary</span>
                   </button>
                   <button
                     onClick={() => setViewLevel("level2")}
-                    className={`px-3 py-1 rounded text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center space-x-1 ${
                       viewLevel === "level2"
                         ? "bg-trust text-white shadow-xs"
                         : "text-slate-600 hover:text-navy-900"
@@ -361,14 +457,14 @@ export default function AssistantPage() {
                     title="Technical clauses, lab testing matrices, and Gazette citations"
                   >
                     <Sliders className="w-3.5 h-3.5" />
-                    <span>Level 2: Technical</span>
+                    <span>Technical</span>
                   </button>
                 </div>
 
                 {/* Evidence Drawer Toggle */}
                 <button
                   onClick={() => setShowEvidence(!showEvidence)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all border ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all border ${
                     showEvidence
                       ? "bg-trust text-white border-trust shadow-xs"
                       : "bg-white text-slate-700 hover:text-navy-900 border-slate-300 hover:bg-slate-100"
@@ -469,37 +565,197 @@ export default function AssistantPage() {
                       )}
                     </div>
 
-                    {/* Level 1 Consumer Guidance Callout Card */}
-                    {msg.sender === "assistant" && viewLevel === "level1" && msg.payload?.level1_consumer_view && (
-                      <div className="mt-3 pt-2.5 border-t border-slate-200/80 space-y-2">
-                        {msg.payload.level1_consumer_view.what_to_look_for && (
-                          <div className="bg-emerald-50/90 border border-emerald-200 p-3 rounded-lg flex items-start space-x-2 text-xs text-emerald-950">
-                            <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                            <div>
-                              <span className="font-bold text-emerald-900 block text-[11px] uppercase tracking-wide">
-                                Consumer Packaging Verification
-                              </span>
-                              <p className="text-xs text-emerald-900 font-medium mt-0.5">
-                                {msg.payload.level1_consumer_view.what_to_look_for}
-                              </p>
-                            </div>
+                    {/* 1. Semantic Document Changes Detected (Docling + BGE-M3 · Zero Hashing) */}
+                    {msg.sender === "assistant" && msg.payload?.semantic_changes && msg.payload.semantic_changes.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-slate-200 space-y-2.5">
+                        <div className="flex items-center justify-between bg-purple-900/10 border border-purple-200/80 p-2.5 rounded-lg text-purple-950 font-bold text-xs">
+                          <div className="flex items-center space-x-1.5">
+                            <GitCompare className="w-4 h-4 text-purple-700" />
+                            <span>Semantic Document Changes Detected (Docling + BGE-M3 · Zero Hashing)</span>
                           </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Level 2 Technical Clauses & Citations */}
-                    {msg.sender === "assistant" && viewLevel === "level2" && msg.payload?.level2_technical_view && (
-                      <div className="mt-3 pt-3 border-t border-slate-200 space-y-3">
-                        <div className="flex items-center justify-between bg-trust/10 p-2 rounded text-trust font-bold text-xs">
-                          <span>Level 2 Technical Regulatory Evidence</span>
-                          <span className="text-[10px] font-mono text-slate-500">
-                            Scheme: {msg.payload.level2_technical_view.certification_scheme || "Scheme I / II"}
+                          <span className="text-[10px] font-mono bg-purple-200 text-purple-900 px-2 py-0.5 rounded font-bold">
+                            {msg.payload.semantic_changes.length} Change{msg.payload.semantic_changes.length > 1 ? "s" : ""} Found
                           </span>
                         </div>
 
-                        {/* Evidence Citations */}
-                        {msg.payload.level2_technical_view.evidence_citations?.length > 0 && (
+                        <div className="space-y-2.5">
+                          {msg.payload.semantic_changes.map((chg: any, idx: number) => {
+                            const typeBadgeColor =
+                              chg.change_type === "MODIFIED"
+                                ? "bg-amber-100 text-amber-900 border-amber-300"
+                                : chg.change_type === "ADDED"
+                                ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                                : chg.change_type === "REMOVED"
+                                ? "bg-red-100 text-red-900 border-red-300"
+                                : "bg-blue-100 text-blue-900 border-blue-300";
+
+                            return (
+                              <div key={idx} className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5 shadow-2xs">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                  <div className="flex items-center space-x-2">
+                                    <span className="font-mono font-bold text-navy-900 text-xs">
+                                      {chg.standard_number} · Clause {chg.clause_number}
+                                    </span>
+                                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded border font-mono ${typeBadgeColor}`}>
+                                      {chg.change_type}
+                                    </span>
+                                  </div>
+                                  {chg.impact_level && (
+                                    <span className="text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded uppercase">
+                                      {chg.impact_category || "REGULATORY"} · {chg.impact_level} IMPACT
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Old vs New Requirement Comparison (Judge Core Criterion) */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] font-mono">
+                                  {chg.old_content && (
+                                    <div className="bg-red-50/70 border border-red-200/80 p-2.5 rounded text-red-950">
+                                      <span className="text-[10px] font-bold text-red-700 uppercase block mb-1">
+                                        Previous Requirement:
+                                      </span>
+                                      <p className="whitespace-pre-wrap leading-relaxed">{chg.old_content}</p>
+                                    </div>
+                                  )}
+                                  {chg.new_content && (
+                                    <div className="bg-emerald-50/70 border border-emerald-200/80 p-2.5 rounded text-emerald-950">
+                                      <span className="text-[10px] font-bold text-emerald-700 uppercase block mb-1">
+                                        New Operative Requirement:
+                                      </span>
+                                      <p className="whitespace-pre-wrap leading-relaxed">{chg.new_content}</p>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Impact Reason & Official Reference */}
+                                <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1.5 border-t border-slate-100 flex-wrap gap-2">
+                                  <div>
+                                    <strong className="text-slate-800">Impact Analysis:</strong> {chg.impact_reason || "Requirement updated in operative BIS specification"}
+                                  </div>
+                                  <div className="text-[10px] font-mono text-slate-500">
+                                    Source: {chg.source_reference || "Bureau of Indian Standards Official Gazette"}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. Consumer Guidance Card */}
+                    {msg.sender === "assistant" && (persona === "consumer" || viewLevel === "level1") && (msg.payload?.persona_views?.consumer || msg.payload?.level1_consumer_view) && (
+                      <div className="mt-3 pt-2.5 border-t border-slate-200/80 space-y-2">
+                        <div className="bg-emerald-50/90 border border-emerald-200 p-3.5 rounded-xl space-y-2.5 text-xs text-emerald-950">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-emerald-900 flex items-center space-x-1.5 text-[11px] uppercase tracking-wider">
+                              <ShoppingCart className="w-4 h-4 text-emerald-700" />
+                              <span>Consumer Mark & Packaging Verification</span>
+                            </span>
+                            <span className="text-[10px] bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded font-bold">
+                              For Consumers
+                            </span>
+                          </div>
+                          <p className="text-xs text-emerald-950 leading-relaxed font-medium">
+                            {msg.payload.persona_views?.consumer?.what_to_look_for || msg.payload.level1_consumer_view?.what_to_look_for || "Always verify that the product packaging bears the official BIS mark (ISI mark with 7-digit CM/L number, CRS with 8-digit R-number, or 6-digit Hallmark HUID) before purchase."}
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px]">
+                            <div className="bg-white/80 p-2.5 rounded-lg border border-emerald-200">
+                              <span className="font-bold text-emerald-900 block mb-0.5">How to Verify:</span>
+                              <span className="text-slate-700 leading-snug block">
+                                {msg.payload.persona_views?.consumer?.how_to_verify || "Enter the 7-digit CM/L or 8-digit R-number into BIS CARE Mobile App or NexaStandards Scanner."}
+                              </span>
+                            </div>
+                            <div className="bg-white/80 p-2.5 rounded-lg border border-emerald-200">
+                              <span className="font-bold text-red-900 block mb-0.5">If Fake or Unmarked:</span>
+                              <span className="text-slate-700 leading-snug block">
+                                {msg.payload.persona_views?.consumer?.if_not_verified || "File a statutory violation report under BIS Act 2016 Sections 14/15/29 through the NexaStandards Grievance generator."}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. Startup / MSME 14-Point Practical Checklist Card */}
+                    {msg.sender === "assistant" && (persona === "startup" || msg.payload?.persona_views?.startup) && (
+                      <div className="mt-3 pt-3 border-t border-slate-200 space-y-2.5">
+                        <div className="flex items-center justify-between bg-saffron/10 border border-saffron/40 p-2.5 rounded-lg text-navy-900 font-bold text-xs">
+                          <div className="flex items-center space-x-1.5">
+                            <Rocket className="w-4 h-4 text-saffron-high" />
+                            <span>Startup / MSME 14-Stage Manufacturing Roadmap</span>
+                          </div>
+                          <span className="text-[10px] font-mono bg-saffron/20 text-navy-900 px-2 py-0.5 rounded font-bold">
+                            Practical Checklist
+                          </span>
+                        </div>
+
+                        <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5">
+                          <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                            {msg.payload.persona_views?.startup?.summary || "Follow this verified 14-step pathway to manufacture, test, and obtain BIS certification without delays or unverified third-party claims."}
+                          </p>
+
+                          <div className="space-y-1.5 pt-1">
+                            {[
+                              { id: "s1", label: "1. Define Exact Product Model & Specifications", desc: "Lock down technical drawings and component BOM" },
+                              { id: "s2", label: "2. Identify Applicable Indian Standard", desc: `Standard: ${msg.payload.product_profile?.standard || "Operative IS Specification"}` },
+                              { id: "s3", label: "3. Check Current QCO Mandate Status", desc: "Confirm whether Scheme I (ISI) or Scheme II (CRS) applies" },
+                              { id: "s4", label: "4. Verify Effective Date & MSME Exemption", desc: "Check if micro/small enterprise grace period applies" },
+                              { id: "s5", label: "5. Determine Conformity Scheme Route", desc: "Scheme I requires factory audit; Scheme II requires lab test report" },
+                              { id: "s6", label: "6. Map Mandatory Testing Parameters", desc: "Safety, performance, material limits and endurance tests" },
+                              { id: "s7", label: "7. Select BIS-Recognized NABL Testing Lab", desc: "Send pre-production prototype to accredited test facility" },
+                              { id: "s8", label: "8. Setup In-House Factory Quality Infrastructure", desc: "Procure required internal test equipment per standard" },
+                              { id: "s9", label: "9. Prepare Scheme of Testing & Inspection (STI)", desc: "Maintain daily testing registers and calibrated instruments" },
+                              { id: "s10", label: "10. Complete Accredited Laboratory Testing", desc: "Obtain valid test report with NABL QR code" },
+                              { id: "s11", label: "11. Submit Online Application on Manakonline / CRS", desc: "Pay statutory BIS application fees through official portal" },
+                              { id: "s12", label: "12. Factory Audit & Verification by BIS Officer", desc: "On-site audit of manufacturing process and sample draw" },
+                              { id: "s13", label: "13. Receive Grant of Licence / Registration Number", desc: "CM/L or R-number issued with validity period" },
+                              { id: "s14", label: "14. Apply Standard Mark on Packaging & Comply", desc: "Print ISI / CRS mark along with licence number on packaging" }
+                            ].map((step) => {
+                              const isChecked = !!checkedChecklist[step.id];
+                              return (
+                                <div
+                                  key={step.id}
+                                  onClick={() => setCheckedChecklist((prev) => ({ ...prev, [step.id]: !prev[step.id] }))}
+                                  className={`flex items-start space-x-2.5 p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
+                                    isChecked ? "bg-emerald-50/70 border-emerald-200 text-emerald-950" : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800"
+                                  }`}
+                                >
+                                  <div className="mt-0.5 shrink-0">
+                                    {isChecked ? (
+                                      <CheckSquare className="w-4 h-4 text-emerald-600" />
+                                    ) : (
+                                      <Square className="w-4 h-4 text-slate-400" />
+                                    )}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className={`font-bold ${isChecked ? "line-through text-slate-500" : "text-navy-900"}`}>
+                                      {step.label}
+                                    </div>
+                                    <div className="text-[11px] text-slate-500">{step.desc}</div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 4. Product Builder Technical Specifications Card */}
+                    {msg.sender === "assistant" && (persona === "builder" || viewLevel === "level2") && (
+                      <div className="mt-3 pt-3 border-t border-slate-200 space-y-2.5">
+                        <div className="flex items-center justify-between bg-blue-900/10 border border-blue-200 p-2.5 rounded-lg text-blue-950 font-bold text-xs">
+                          <div className="flex items-center space-x-1.5">
+                            <Factory className="w-4 h-4 text-blue-700" />
+                            <span>Product Builder & Engineer Technical Specifications</span>
+                          </div>
+                          <span className="text-[10px] font-mono text-blue-900 bg-blue-100 px-2 py-0.5 rounded">
+                            Scheme: {msg.payload?.level2_technical_view?.certification_scheme || "Scheme I / II"}
+                          </span>
+                        </div>
+
+                        {msg.payload?.level2_technical_view?.evidence_citations?.length > 0 && (
                           <div className="space-y-1.5">
                             <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">
                               Official Clauses Cited:
@@ -667,6 +923,155 @@ export default function AssistantPage() {
 
         </main>
       </div>
+
+      {/* Interactive BIS Terminology Glossary Modal / Drawer (Judge UX Requirement) */}
+      {showGlossary && (
+        <div className="fixed inset-0 z-50 bg-navy-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-navy-900 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <BookOpen className="w-5 h-5 text-saffron" />
+                <div>
+                  <h3 className="font-extrabold text-sm sm:text-base">
+                    What Does This BIS Term Mean?
+                  </h3>
+                  <p className="text-[11px] text-slate-300">
+                    Statutory glossary explaining technical BIS concepts in normal-person language ({language.toUpperCase()})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGlossary(false)}
+                className="p-1.5 rounded-lg bg-navy-800 hover:bg-navy-700 text-slate-300 hover:text-white transition-colors"
+                title="Close Glossary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
+              {/* Left Column: Term List */}
+              <div className="w-full sm:w-64 bg-slate-50 border-r border-slate-200 p-3 overflow-y-auto space-y-1.5 shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 block">
+                  Select BIS Statutory Term
+                </span>
+                {loadingGlossary ? (
+                  <div className="p-4 text-center text-xs text-slate-500 flex items-center justify-center space-x-2">
+                    <RefreshCw className="w-4 h-4 animate-spin text-trust" />
+                    <span>Loading terms...</span>
+                  </div>
+                ) : (
+                  (glossaryTerms.length > 0 ? glossaryTerms : [
+                    { term: "QCO", full_name: "Quality Control Order", simple_meaning: "A mandatory government directive that makes BIS certification compulsory for specified products before they can be manufactured, imported, stored, or sold in India.", why_it_matters: "Selling non-certified goods covered by a QCO is a criminal offence punishable under the BIS Act 2016.", who_needs_to_care: "Consumers (verify mark), Startups (ensure compliance before launch), Manufacturers (mandatory licence).", official_reference: "BIS Act 2016 Section 16 & Gazette Notifications" },
+                    { term: "CRS", full_name: "Compulsory Registration Scheme (Scheme II)", simple_meaning: "A self-declaration conformity scheme where manufacturers test samples at BIS-recognized NABL labs and obtain an 8-digit R-number.", why_it_matters: "Applies to electronics, IT products, solar panels, and battery packs.", who_needs_to_care: "Electronics startups, importers, consumer tech buyers.", official_reference: "Electronics and IT Goods (Requirement for Compulsory Registration) Order" },
+                    { term: "ISI Mark", full_name: "Indian Standards Institution Mark (Scheme I)", simple_meaning: "The official product certification mark with a 7-digit CM/L number indicating continuous third-party factory inspection and lab testing.", why_it_matters: "Proof that physical safety, pressure, or food contact limits are verified.", who_needs_to_care: "Everyone buying or making pressure cookers, cement, cables, water bottles.", official_reference: "Bureau of Indian Standards (Conformity Assessment) Regulations, Scheme I" },
+                    { term: "HUID", full_name: "Hallmark Unique Identification", simple_meaning: "A 6-digit alphanumeric code laser-engraved onto every piece of gold jewellery alongside the BIS hallmark logo and purity grade.", why_it_matters: "Enables consumers to verify purity, assaying centre, and jeweller identity on the BIS CARE app.", who_needs_to_care: "Gold buyers, jewellers, and hallmarking assaying centres.", official_reference: "BIS Hallmarking Regulations 2018" },
+                    { term: "STI", full_name: "Scheme of Testing and Inspection", simple_meaning: "The mandatory daily quality control manual that a factory must follow to maintain its BIS licence.", why_it_matters: "Failure to maintain testing logs results in licence suspension.", who_needs_to_care: "Factory quality engineers and plant heads.", official_reference: "BIS Product-Specific STI Guidelines" },
+                    { term: "NABL", full_name: "National Accreditation Board for Testing and Calibration Laboratories", simple_meaning: "The national accreditation body that verifies whether a testing laboratory has the equipment and calibration to test per Indian Standards.", why_it_matters: "Only test reports from BIS-recognized NABL labs are accepted for certification.", who_needs_to_care: "Startups choosing where to send samples.", official_reference: "ISO/IEC 17025 Conformity" }
+                  ]).map((t: any) => {
+                    const isSelected = selectedTerm?.term === t.term;
+                    return (
+                      <button
+                        key={t.term}
+                        type="button"
+                        onClick={() => setSelectedTerm(t)}
+                        className={`w-full text-left p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                          isSelected
+                            ? "bg-navy-900 text-white shadow-xs font-bold"
+                            : "bg-white hover:bg-slate-100 text-slate-800 border border-slate-200/80"
+                        }`}
+                      >
+                        <div className="min-w-0 pr-2">
+                          <span className="block font-mono text-xs">{t.term}</span>
+                          <span className={`text-[10px] truncate block ${isSelected ? "text-slate-300" : "text-slate-500"}`}>
+                            {t.full_name}
+                          </span>
+                        </div>
+                        <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "text-saffron" : "text-slate-400"}`} />
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Right Detail Pane */}
+              <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                {selectedTerm ? (
+                  <div className="space-y-4">
+                    <div className="border-b border-slate-200 pb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono text-xl font-extrabold text-navy-900">
+                          {selectedTerm.term}
+                        </span>
+                        <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono font-semibold">
+                          {selectedTerm.full_name}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Simple Explanation for Normal Persons */}
+                    <div className="bg-emerald-50/70 border border-emerald-200 p-4 rounded-xl space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 flex items-center space-x-1">
+                        <HelpCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Simple Meaning (Normal Person View):</span>
+                      </span>
+                      <p className="text-xs text-emerald-950 font-medium leading-relaxed">
+                        {selectedTerm.simple_meaning}
+                      </p>
+                    </div>
+
+                    {/* Why It Matters */}
+                    <div className="space-y-1">
+                      <span className="text-xs font-bold text-navy-900 uppercase tracking-wide block">
+                        Why It Matters:
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        {selectedTerm.why_it_matters}
+                      </p>
+                    </div>
+
+                    {/* Who Needs to Care */}
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                      <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wide block">
+                        Who Needs to Care:
+                      </span>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {selectedTerm.who_needs_to_care}
+                      </p>
+                    </div>
+
+                    {/* Official Statutory Reference */}
+                    <div className="text-[11px] text-slate-500 font-mono pt-2 border-t border-slate-100 flex items-center justify-between">
+                      <span>Statutory Basis:</span>
+                      <span className="font-bold text-trust">{selectedTerm.official_reference}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-slate-400 text-xs">
+                    Select a term on the left to read its plain-language explanation.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs">
+              <span className="text-slate-500 text-[11px]">
+                Source: BIS Act 2016 & Centralized Multilingual Regulatory Engine
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowGlossary(false)}
+                className="bg-navy-900 hover:bg-navy-800 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors"
+              >
+                Close Explainer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

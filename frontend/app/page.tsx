@@ -26,7 +26,12 @@ import {
   RefreshCw,
   GitBranch,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  ShoppingCart,
+  Rocket,
+  Factory,
+  CheckSquare,
+  GitCompare
 } from "lucide-react";
 
 interface BISUpdateItem {
@@ -49,6 +54,7 @@ interface BISUpdateItem {
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [selectedPersona, setSelectedPersona] = useState<"consumer" | "startup" | "builder">("consumer");
   const [activeGraphTab, setActiveGraphTab] = useState<"mobile" | "cooker" | "bottle">("mobile");
   const [updates, setUpdates] = useState<BISUpdateItem[]>([]);
   const [loadingUpdates, setLoadingUpdates] = useState(false);
@@ -76,7 +82,7 @@ export default function HomePage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      router.push(`/assistant?q=${encodeURIComponent(query)}`);
+      router.push(`/assistant?persona=${selectedPersona}&q=${encodeURIComponent(query)}`);
     }
   };
 
@@ -220,34 +226,167 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Hero Banner Section */}
+          {/* Hero Banner Section with 3 Persona Choice Cards */}
           <section className="bg-navy-900 text-white rounded-2xl p-8 md:p-12 relative overflow-hidden shadow-xl border border-navy-800">
             <div className="absolute right-0 top-0 w-96 h-96 bg-trust/25 rounded-full blur-3xl -z-0 pointer-events-none" />
             <div className="absolute left-1/3 bottom-0 w-80 h-80 bg-saffron/15 rounded-full blur-3xl -z-0 pointer-events-none" />
 
-            <div className="relative z-10 max-w-4xl space-y-6">
+            <div className="relative z-10 max-w-5xl space-y-6">
               <div className="inline-flex items-center space-x-2 bg-saffron/20 border border-saffron/40 px-3.5 py-1.5 rounded-full text-saffron text-xs font-bold uppercase tracking-wider">
                 <Sparkles className="w-4 h-4" />
                 <span>SIH 2026 · Problem Statement SIH26107 · Ministry of Consumer Affairs & BIS</span>
               </div>
 
-              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
-                NexaStandards<br />
-                <span className="text-saffron">AI-Powered Intelligent Assistant for Indian Standards & BIS Services</span>
-              </h1>
+              <div className="space-y-2">
+                <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
+                  Tell us what product you have or want to make.
+                </h1>
+                <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-3xl">
+                  NexaStandards translates complex BIS statutory regulations, Indian Standards, and Gazette QCOs into plain, actionable guidance tailored to your specific role.
+                </p>
+              </div>
 
-              <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-3xl">
-                Statutory regulatory intelligence grounded in official Gazette notifications, Quality Control Orders (QCOs),
-                and Bureau of Indian Standards specifications. Delivering <strong>Zero-Hallucination regulatory guidance</strong> for
-                consumers, MSMEs, startups, testing laboratories, and enforcement officers.
-              </p>
+              {/* 3 Persona Choice Cards (Judge Architectural Requirement) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
+                {/* 1. Consumer */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPersona("consumer");
+                    router.push("/assistant?persona=consumer&q=Is+BIS+mandatory+for+pressure+cookers%3F");
+                  }}
+                  className={`p-4 rounded-xl text-left border transition-all flex flex-col justify-between space-y-3 group ${
+                    selectedPersona === "consumer"
+                      ? "bg-navy-800/90 border-saffron shadow-lg ring-1 ring-saffron"
+                      : "bg-navy-950/60 border-slate-700/80 hover:border-slate-500 hover:bg-navy-800/50"
+                  }`}
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                        <ShoppingCart className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                        Plain Language
+                      </span>
+                    </div>
+                    <div className="text-sm font-extrabold text-white group-hover:text-saffron transition-colors">
+                      🛒 I am a Consumer
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      "Check a product, BIS mark, licence or requirement"
+                    </p>
+                  </div>
+                  <div className="text-[11px] font-bold text-emerald-400 flex items-center space-x-1 pt-1 border-t border-slate-700/60">
+                    <span>Verify Mark & Packaging</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+
+                {/* 2. Startup / MSME */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPersona("startup");
+                    router.push("/assistant?persona=startup&q=I+want+to+manufacture+pressure+cookers.+What+should+I+do%3F");
+                  }}
+                  className={`p-4 rounded-xl text-left border transition-all flex flex-col justify-between space-y-3 group ${
+                    selectedPersona === "startup"
+                      ? "bg-navy-800/90 border-saffron shadow-lg ring-1 ring-saffron"
+                      : "bg-navy-950/60 border-slate-700/80 hover:border-slate-500 hover:bg-navy-800/50"
+                  }`}
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="w-9 h-9 rounded-lg bg-saffron/20 text-saffron flex items-center justify-center font-bold">
+                        <Rocket className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-saffron/20 text-saffron border border-saffron/40">
+                        14-Point Checklist
+                      </span>
+                    </div>
+                    <div className="text-sm font-extrabold text-white group-hover:text-saffron transition-colors">
+                      🚀 I am a Startup / MSME
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      "Find what I need to manufacture or sell this product"
+                    </p>
+                  </div>
+                  <div className="text-[11px] font-bold text-saffron flex items-center space-x-1 pt-1 border-t border-slate-700/60">
+                    <span>Startup Manufacturing Guide</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+
+                {/* 3. Product Builder */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPersona("builder");
+                    router.push("/assistant?persona=builder&q=Which+standard+and+tests+apply+to+my+product%3F");
+                  }}
+                  className={`p-4 rounded-xl text-left border transition-all flex flex-col justify-between space-y-3 group ${
+                    selectedPersona === "builder"
+                      ? "bg-navy-800/90 border-saffron shadow-lg ring-1 ring-saffron"
+                      : "bg-navy-950/60 border-slate-700/80 hover:border-slate-500 hover:bg-navy-800/50"
+                  }`}
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="w-9 h-9 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                        <Factory className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
+                        Engineering Specs
+                      </span>
+                    </div>
+                    <div className="text-sm font-extrabold text-white group-hover:text-saffron transition-colors">
+                      🏭 I am a Product Builder
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      "Get standards, tests, documents and certification requirements"
+                    </p>
+                  </div>
+                  <div className="text-[11px] font-bold text-blue-400 flex items-center space-x-1 pt-1 border-t border-slate-700/60">
+                    <span>Clauses & Test Parameters</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+              </div>
 
               {/* Natural Language Query Search Bar ("What are you looking for?") */}
-              <div className="space-y-2 pt-2 max-w-3xl">
-                <label className="text-xs font-bold uppercase tracking-wider text-saffron flex items-center space-x-1.5">
-                  <Search className="w-3.5 h-3.5" />
-                  <span>What are you looking for?</span>
-                </label>
+              <div className="space-y-2 pt-2 max-w-4xl">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-saffron flex items-center space-x-1.5">
+                    <Search className="w-3.5 h-3.5" />
+                    <span>Search Regulatory Intelligence (Active Role: {selectedPersona === "consumer" ? "🛒 Consumer" : selectedPersona === "startup" ? "🚀 Startup / MSME" : "🏭 Product Builder"})</span>
+                  </label>
+                  <div className="flex items-center space-x-1 text-[11px] bg-navy-950/70 px-2.5 py-1 rounded-lg border border-slate-700">
+                    <span className="text-slate-400">Switch Role:</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPersona("consumer")}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedPersona === "consumer" ? "bg-emerald-500 text-navy-900" : "text-slate-300 hover:text-white"}`}
+                    >
+                      Consumer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPersona("startup")}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedPersona === "startup" ? "bg-saffron text-navy-900" : "text-slate-300 hover:text-white"}`}
+                    >
+                      Startup
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPersona("builder")}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedPersona === "builder" ? "bg-blue-400 text-navy-900" : "text-slate-300 hover:text-white"}`}
+                    >
+                      Builder
+                    </button>
+                  </div>
+                </div>
+
                 <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
                   <div className="relative flex-1">
                     <Search className="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400" />
@@ -255,7 +394,7 @@ export default function HomePage() {
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="e.g. 'mobile', 'What standard applies to pressure cookers?', 'Is BIS mandatory for LED bulbs?'"
+                      placeholder="e.g. 'mobile', 'What standard applies to pressure cookers?', 'ಕನ್ನಡ: ಈ ಪ್ರೆಶರ್ ಕುಕ್ಕರ್ಗೆ BIS ಬೇಕಾ?'"
                       className="w-full bg-white text-navy-900 font-medium pl-11 pr-4 py-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-saffron shadow-sm"
                     />
                   </div>
@@ -269,28 +408,48 @@ export default function HomePage() {
                 </form>
               </div>
 
-              {/* Quick Preset Prompts */}
+              {/* Quick Preset Prompts including Multilingual and Judge Scenarios */}
               <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-slate-300">
-                <span className="font-semibold text-saffron">Try Instant Queries:</span>
+                <span className="font-semibold text-saffron">Try Instant Scenarios:</span>
                 <button
-                  onClick={() => router.push("/assistant?q=mobile")}
+                  type="button"
+                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&q=mobile`)}
                   className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition-colors font-mono"
                 >
                   "mobile"
                 </button>
                 <button
-                  onClick={() => router.push("/assistant?q=Is+BIS+mandatory+for+pressure+cookers%3F")}
+                  type="button"
+                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&q=Is+BIS+mandatory+for+pressure+cookers%3F`)}
                   className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition-colors"
                 >
                   Pressure Cooker (IS 2347)
                 </button>
                 <button
-                  onClick={() => router.push("/assistant?q=What+standard+applies+to+stainless+steel+water+bottles%3F")}
-                  className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition-colors"
+                  type="button"
+                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&q=%E0%B2%88+%E0%B2%AA%E0%B3%8D%E0%B2%B0%E0%B3%86%E0%B2%B6%E0%B2%B0%E0%B3%8D+%E0%B2%95%E0%B3%81%E0%B2%95%E0%B3%8D%E0%B2%95%E0%B2%B0%E0%B3%8D%E0%B2%97%E0%B3%86+BIS+%E0%B2%AC%E0%B3%87%E0%B2%95%E0%B2%BE%3F`)}
+                  className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-emerald-300 font-semibold transition-colors"
+                  title="Kannada: Does this pressure cooker need BIS?"
                 >
-                  Water Bottle (IS 17803)
+                  ಕನ್ನಡ: ಪ್ರೆಶರ್ ಕುಕ್ಕರ್
                 </button>
                 <button
+                  type="button"
+                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&q=%E0%A4%AE%E0%A5%8B%E0%A4%AC%E0%A4%BE%E0%A4%87%E0%A4%B2+%E0%A4%95%E0%A5%87+%E0%A4%B2%E0%A4%BF%E0%A4%8F+BIS+%E0%A4%9C%E0%A4%B0%E0%A5%82%E0%A4%B0%E0%A5%80+%E0%A4%B9%E0%A5%88+%E0%A4%95%E0%A5%8D%E0%A4%AF%E0%A4%BE%3F`)}
+                  className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-amber-300 font-semibold transition-colors"
+                  title="Hindi: Is BIS required for mobile?"
+                >
+                  हिंदी: मोबाइल BIS जरूरी?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/assistant?persona=builder&q=What+changed+in+the+latest+version+of+Clause+5.2%3F`)}
+                  className="bg-purple-950/80 hover:bg-purple-900 border border-purple-500/60 text-purple-200 px-3 py-1.5 rounded-lg font-semibold transition-colors"
+                >
+                  ⚖️ Judge Demo: Clause 5.2 Diff
+                </button>
+                <button
+                  type="button"
                   onClick={() => router.push("/verify")}
                   className="bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-600/40 text-emerald-200 px-3 py-1.5 rounded-lg font-semibold flex items-center space-x-1 transition-colors"
                 >
@@ -479,6 +638,181 @@ export default function HomePage() {
                 </div>
               );
             })()}
+          </section>
+
+          {/* Regulatory Document Versioning & Semantic Change Engine Showcase (Judge Requirement) */}
+          <section className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 space-y-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+              <div>
+                <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-trust uppercase tracking-wider">
+                  <GitCompare className="w-4 h-4 text-trust" />
+                  <span>SIH 2026 Core Architecture · Zero Hashing Guarantee</span>
+                </div>
+                <h2 className="text-xl font-extrabold text-navy-900 mt-1">
+                  Document Versioning & Semantic Change Engine
+                </h2>
+                <p className="text-xs text-slate-500 max-w-3xl">
+                  Official BIS PDFs are parsed into structured clauses, tables, and annexures using <strong>Docling</strong>. 
+                  Changes between document versions are resolved semantically with <strong>BGE-M3</strong> embeddings—strictly avoiding misleading SHA-256 or binary hash comparisons.
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2 self-start">
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-300 flex items-center space-x-1">
+                  <CheckCircle className="w-3 h-3 text-emerald-600" />
+                  <span>No Binary Hashing</span>
+                </span>
+                <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-2.5 py-1 rounded-full border border-purple-300">
+                  Docling + BGE-M3
+                </span>
+              </div>
+            </div>
+
+            {/* Architecture Pipeline Summary Banner */}
+            <div className="bg-navy-950 text-slate-300 p-4 rounded-xl border border-navy-800 text-xs font-mono flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                <span className="text-saffron font-bold">Official BIS Source</span>
+                <span>→</span>
+                <span className="text-white font-bold">Immutable Version Store</span>
+                <span>→</span>
+                <span className="text-emerald-400 font-bold">Docling Clause Parser</span>
+                <span>→</span>
+                <span className="text-cyan-400 font-bold">BGE-M3 Semantic Diff</span>
+                <span>→</span>
+                <span className="text-amber-300 font-bold">Regulatory Validator</span>
+                <span>→</span>
+                <span className="text-white font-bold">Product Impact Engine</span>
+              </div>
+              <span className="text-[10px] text-slate-400 bg-navy-900 px-2 py-0.5 rounded border border-slate-700">
+                Statutory Immutable Store
+              </span>
+            </div>
+
+            {/* 3 Judge Benchmark Demos Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Benchmark 1 */}
+              <div className="border border-purple-200 bg-purple-50/40 rounded-xl p-4.5 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold bg-purple-900 text-white px-2 py-0.5 rounded">
+                      BENCHMARK 1
+                    </span>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+                      MODIFIED
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-navy-900">
+                    Clause 5.2 Requirement Modified
+                  </h4>
+                  <div className="space-y-1.5 text-[11px] bg-white p-3 rounded-lg border border-purple-100 font-mono">
+                    <div className="text-red-700 bg-red-50/70 p-1 rounded">
+                      <span className="font-bold">OLD:</span> "The product shall withstand pressure of 300 kPa."
+                    </div>
+                    <div className="text-emerald-700 bg-emerald-50/70 p-1 rounded">
+                      <span className="font-bold">NEW:</span> "The product shall withstand pressure of 350 kPa."
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500 font-medium">Regulatory Impact:</span>
+                    <span className="font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded text-[10px]">
+                      TESTING · HIGH
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    Changes hydrostatic test pressure from 300 kPa to 350 kPa. Automatically flags affected manufacturers.
+                  </p>
+                </div>
+                <Link
+                  href="/assistant?persona=builder&q=What+changed+in+the+latest+version+of+Clause+5.2%3F"
+                  className="text-xs font-bold text-purple-900 hover:text-purple-700 flex items-center space-x-1 pt-2 border-t border-purple-200"
+                >
+                  <span>Inspect in AI Assistant</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              {/* Benchmark 2 */}
+              <div className="border border-emerald-200 bg-emerald-50/40 rounded-xl p-4.5 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold bg-emerald-900 text-white px-2 py-0.5 rounded">
+                      BENCHMARK 2
+                    </span>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      ADDED
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-navy-900">
+                    New Mandatory Clause Added
+                  </h4>
+                  <div className="space-y-1.5 text-[11px] bg-white p-3 rounded-lg border border-emerald-100 font-mono">
+                    <div className="text-slate-500 p-1">
+                      <span className="font-bold">OLD:</span> Clauses 1, 2, 3 (No consumer warning requirement)
+                    </div>
+                    <div className="text-emerald-700 bg-emerald-50/70 p-1 rounded">
+                      <span className="font-bold">NEW:</span> "Clause 4: Safety Warnings & Batch Tracking"
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500 font-medium">Regulatory Impact:</span>
+                    <span className="font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded text-[10px]">
+                      MARKING · MEDIUM
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    Identifies that Clause 4 did not exist in earlier edition. Updates packaging and documentation checklist.
+                  </p>
+                </div>
+                <Link
+                  href="/assistant?persona=startup&q=What+clauses+were+added+in+the+latest+amendment%3F"
+                  className="text-xs font-bold text-emerald-900 hover:text-emerald-700 flex items-center space-x-1 pt-2 border-t border-emerald-200"
+                >
+                  <span>Inspect in AI Assistant</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              {/* Benchmark 3 */}
+              <div className="border border-blue-200 bg-blue-50/40 rounded-xl p-4.5 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold bg-blue-900 text-white px-2 py-0.5 rounded">
+                      BENCHMARK 3
+                    </span>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300">
+                      MOVED / RENAMED
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-navy-900">
+                    Clause Renumbered & Relocated
+                  </h4>
+                  <div className="space-y-1.5 text-[11px] bg-white p-3 rounded-lg border border-blue-100 font-mono">
+                    <div className="text-slate-600 p-1">
+                      <span className="font-bold">OLD:</span> Clause 5.2 (Sampling Procedure)
+                    </div>
+                    <div className="text-blue-700 bg-blue-50/70 p-1 rounded">
+                      <span className="font-bold">NEW:</span> Clause 6.1 (Substantially identical text)
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500 font-medium">Semantic Match:</span>
+                    <span className="font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-[10px]">
+                      SIMILARITY = 1.00
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    BGE-M3 recognizes renumbered clause to prevent false "Deleted" + "Added" alarms during section reorganizations.
+                  </p>
+                </div>
+                <Link
+                  href="/assistant?persona=builder&q=Was+Clause+5.2+moved+or+renumbered+to+Clause+6.1%3F"
+                  className="text-xs font-bold text-blue-900 hover:text-blue-700 flex items-center space-x-1 pt-2 border-t border-blue-200"
+                >
+                  <span>Inspect in AI Assistant</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
           </section>
 
           {/* Dedicated LATEST BIS UPDATES Card Section */}

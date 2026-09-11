@@ -449,5 +449,49 @@ class SourceDocumentModel(Base):
     review_notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class DocumentClauseModel(Base):
+    """
+    Structured document units (Clauses, Subclauses, Tables, Annexures).
+    Extracted via Docling parser to enable structural and semantic change detection.
+    Canonical identifier format: 'IS 1234|5.2' or '{version_id}|{clause_number}'.
+    """
+    __tablename__ = "document_clauses"
+    
+    id = Column(String(64), primary_key=True, default=generate_uuid)
+    version_id = Column(String(64), ForeignKey("standard_versions.id", ondelete="CASCADE"), nullable=True)
+    document_id = Column(String(64), ForeignKey("documents.id", ondelete="CASCADE"), nullable=True)
+    standard_number = Column(String(100), nullable=False, index=True) # e.g. "IS 2347:2017"
+    clause_number = Column(String(100), nullable=False, index=True) # e.g. "5.2", "TABLE-4", "ANNEX-A"
+    title = Column(String(255), nullable=True) # e.g. "Material Requirements"
+    content = Column(Text, nullable=False) # e.g. "The product shall withstand pressure of 350 kPa."
+    clause_type = Column(String(50), default="CLAUSE") # CLAUSE, SUBCLAUSE, TABLE, ANNEXURE, NOTE
+    page_number = Column(Integer, default=1)
+    table_data_json = Column(Text, nullable=True) # Structured JSON for table rows & columns
+    embedding_reference = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
-
+class DocumentChangeModel(Base):
+    """
+    Immutable records of semantic changes detected between document versions.
+    Classified via semantic diffing and passed through regulatory validation.
+    No binary/hash comparisons are used.
+    """
+    __tablename__ = "document_changes"
+    
+    id = Column(String(64), primary_key=True, default=generate_uuid)
+    standard_number = Column(String(100), nullable=False, index=True) # e.g. "IS 2347"
+    old_version_id = Column(String(64), nullable=True) # e.g. "ver_2347_2006"
+    new_version_id = Column(String(64), nullable=True) # e.g. "ver_2347_2017"
+    clause_number = Column(String(100), nullable=False, index=True) # e.g. "5.2"
+    change_type = Column(String(50), nullable=False) # ADDED, REMOVED, MODIFIED, UNCHANGED, MOVED, RENAMED, TABLE_CHANGED
+    old_content = Column(Text, nullable=True) # e.g. "300 kPa"
+    new_content = Column(Text, nullable=True) # e.g. "350 kPa"
+    similarity_score = Column(Float, default=1.0)
+    impact_category = Column(String(50), default="TESTING") # SAFETY, TESTING, PERFORMANCE, MATERIAL, MARKING, DOCUMENTATION, CERTIFICATION, REGISTRATION, SCOPE, APPLICABILITY, OTHER
+    impact_level = Column(String(50), default="HIGH") # LOW, MEDIUM, HIGH, UNKNOWN
+    impact_reason = Column(Text, nullable=True) # e.g. "Testing threshold updated from 300 kPa to 350 kPa."
+    effective_date = Column(String(50), nullable=True)
+    source_reference = Column(String(255), default="Bureau of Indian Standards Official Gazette")
+    validation_status = Column(String(50), default="VALIDATED_OFFICIAL")
+    affected_products_json = Column(Text, nullable=True) # JSON list: e.g. ["Domestic Pressure Cooker"]
+    created_at = Column(DateTime, default=datetime.utcnow)

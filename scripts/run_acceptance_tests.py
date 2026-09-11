@@ -197,17 +197,61 @@ async def test_section_53_disconnected_source_offline():
         # Restore online healthy status
         await client.post("/api/sync/run", json={"simulate_offline": False})
 
+async def test_section_54_semantic_diff_and_personas():
+    print("\n--- Section 54: Structured Semantic Diff & 3-Persona Multilingual Engine ---")
+    from backend.app.core.semantic_diff import semantic_diff_engine
+    
+    # Demo Test 1: Modified requirement (300 kPa -> 350 kPa)
+    d1 = semantic_diff_engine.simulate_demo_test_1()
+    assert d1["success"] is True
+    assert d1["result"]["change_type"] == "MODIFIED"
+    assert "300 kPa" in d1["result"]["old_content"]
+    assert "350 kPa" in d1["result"]["new_content"]
+    print("  [OK] Demo Test 1: Clause 5.2 modification (300 kPa -> 350 kPa) verified (TESTING HIGH)")
+
+    # Demo Test 2: Added clause
+    d2 = semantic_diff_engine.simulate_demo_test_2()
+    assert d2["success"] is True
+    assert d2["result"]["change_type"] == "ADDED"
+    print("  [OK] Demo Test 2: Added clause detection (Clause 4 introduced) verified")
+
+    # Demo Test 3: Moved/Renamed clause
+    d3 = semantic_diff_engine.simulate_demo_test_3()
+    assert d3["success"] is True
+    assert d3["result"]["change_type"] == "MOVED"
+    print("  [OK] Demo Test 3: Moved/Renamed clause detection (Clause 5.2 -> 6.1) verified via semantic similarity")
+
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+        # Consumer Persona
+        r_con = await client.post("/api/chat", json={"message": "What to check on water bottle packaging?", "persona": "consumer"})
+        assert r_con.status_code == 200
+        assert "what_to_look_for_on_packaging" in r_con.json()["persona_views"]["consumer"]
+        print("  [OK] Persona: Consumer packaging verification and counterfeit guidance verified")
+
+        # Startup Persona
+        r_start = await client.post("/api/chat", json={"message": "I want to manufacture pressure cookers", "persona": "startup"})
+        assert r_start.status_code == 200
+        assert len(r_start.json()["persona_views"]["startup"]["checklist"]) == 14
+        print("  [OK] Persona: Startup/MSME 14-item practical manufacturing checklist verified")
+
+        # Multilingual Kannada
+        r_kn = await client.post("/api/chat", json={"message": "ಈ ಪ್ರೆಶರ್ ಕುಕ್ಕರ್ಗೆ BIS ಬೇಕಾ?", "language": "kn"})
+        assert r_kn.status_code == 200
+        assert r_kn.json()["product"] == "Domestic Pressure Cooker"
+        print("  [OK] Multilingual Kannada Entity Resolution verified")
+
 async def run_all_acceptance_tests():
     print("=" * 75)
-    print("NEXASTANDARDS ACCEPTANCE TEST RUNNER (SECTIONS 50–53)")
+    print("NEXASTANDARDS ACCEPTANCE TEST RUNNER (SECTIONS 50–54)")
     print("=" * 75)
     try:
         await test_section_50_mobile_queries()
         await test_section_51_standard_revision_simulation()
         await test_section_52_tomorrow_effective_date()
         await test_section_53_disconnected_source_offline()
+        await test_section_54_semantic_diff_and_personas()
         print("\n" + "=" * 75)
-        print("ALL ACCEPTANCE TESTS (SECTIONS 50–53) PASSED WITH ZERO ERRORS!")
+        print("ALL ACCEPTANCE TESTS (SECTIONS 50–54) PASSED WITH ZERO ERRORS!")
         print("=" * 75)
         return True
     except Exception as e:
@@ -217,6 +261,8 @@ async def run_all_acceptance_tests():
         return False
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     success = asyncio.run(run_all_acceptance_tests())
     if not success:
         sys.exit(1)

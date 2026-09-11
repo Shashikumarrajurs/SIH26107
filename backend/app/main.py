@@ -30,6 +30,7 @@ from backend.app.api.products import router as products_router
 from backend.app.api.updates import router as updates_router
 from backend.app.api.sync import router as sync_router
 from backend.app.api.evidence import router as evidence_router
+from backend.app.api.changes import router as changes_router
 
 app = FastAPI(
     title=f"{settings.PROJECT_NAME} 🛡️",
@@ -69,6 +70,7 @@ app.include_router(products_router, prefix=settings.API_V1_STR)
 app.include_router(updates_router, prefix=settings.API_V1_STR)
 app.include_router(sync_router, prefix=settings.API_V1_STR)
 app.include_router(evidence_router, prefix=settings.API_V1_STR)
+app.include_router(changes_router, prefix=settings.API_V1_STR)
 
 # Top-level search & convenience endpoints requested by SIH specification
 @app.get("/api/search")

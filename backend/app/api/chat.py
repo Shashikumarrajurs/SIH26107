@@ -15,6 +15,7 @@ class ChatRequest(BaseModel):
     conversation_id: Optional[str] = None
     message: str
     language: Optional[str] = "en"
+    persona: Optional[str] = "consumer" # "consumer" | "startup" | "builder"
     image_base64: Optional[str] = None
     user_context: Optional[Dict[str, Any]] = None
 
@@ -66,6 +67,7 @@ def post_chat_message(req: ChatRequest, db: Session = Depends(get_db)):
         db=db,
         query=message_text,
         language=req.language or "en",
+        persona=req.persona or "consumer",
         conversation_id=conv_id,
         existing_profile=existing_profile
     )
@@ -155,6 +157,7 @@ def post_chat_message(req: ChatRequest, db: Session = Depends(get_db)):
         "product_profile": updated_profile,
         "evidence": retrieved_evidence,
         "recommended_standards": recommended_stds,
+        "standards": recommended_stds,
         "compliance_graph": orch_result.get("compliance_graph", {}),
         "regulatory_status": orch_result.get("regulatory_status", "ACTIVE"),
         "certification_guidance": cert_guidance,
@@ -172,6 +175,10 @@ def post_chat_message(req: ChatRequest, db: Session = Depends(get_db)):
         "actionable_next_steps": orch_result.get("actionable_next_steps", []),
         "level1_consumer_view": orch_result.get("level1_consumer_view", {}),
         "level2_technical_view": orch_result.get("level2_technical_view", {}),
+        "persona_views": orch_result.get("persona_views", {}),
+        "active_persona": orch_result.get("active_persona", req.persona or "consumer"),
+        "semantic_changes": orch_result.get("semantic_changes", []),
+        "bis_12_steps": orch_result.get("bis_12_steps", []),
         "warnings": orch_result.get("warnings", []),
         "conflicts": orch_result.get("conflicts", []),
         "last_verified": orch_result.get("last_verified"),
