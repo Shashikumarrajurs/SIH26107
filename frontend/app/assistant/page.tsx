@@ -497,44 +497,31 @@ export default function AssistantPage() {
               </div>
             </div>
 
-            {/* BIS Conformity Journey Banner (Dedicated full-width row with collapse toggle) */}
-            <div className="bg-slate-50/90 border-b border-slate-200 shrink-0">
-              <div className="px-4 py-1.5 flex items-center justify-between bg-slate-100/70 border-b border-slate-200/60 text-[11px] font-semibold text-navy-900">
-                <span className="flex items-center space-x-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-trust" />
-                  <span>Conformity Roadmap: <span className="text-trust font-bold">{currentJourney?.product_name || "Product"}</span></span>
-                </span>
-                <button
-                  onClick={() => setRoadmapExpanded(!roadmapExpanded)}
-                  className="text-slate-500 hover:text-navy-900 flex items-center space-x-1 text-[11px] font-medium transition-colors"
-                  title={roadmapExpanded ? "Collapse Roadmap banner" : "Expand Roadmap banner"}
-                >
-                  <span>{roadmapExpanded ? "Collapse" : "Expand Roadmap"}</span>
-                  {roadmapExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
+            {/* BIS Conformity Journey Banner */}
+            {currentJourney && (
+              <div className="p-2.5 bg-slate-50 border-b border-slate-200 shrink-0">
+                <BISJourneyStepper journey={currentJourney} />
               </div>
-              {roadmapExpanded && (
-                <div className="p-3">
-                  <BISJourneyStepper journey={currentJourney} />
-                </div>
-              )}
-            </div>
+            )}
 
-            {/* Quick Scenario Queries Bar (Horizontal scrollable chips) */}
-            <div className="px-4 py-2 bg-white border-b border-slate-100 flex items-center space-x-2 overflow-x-auto no-scrollbar">
-              <span className="text-[11px] font-bold text-slate-400 uppercase shrink-0 flex items-center space-x-1">
-                <Sparkles className="w-3 h-3 text-saffron" />
-                <span>Quick Prompts:</span>
-              </span>
-              {quickPrompts.map((p, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSend(p.query)}
-                  className="px-2.5 py-1 rounded-full bg-slate-50 hover:bg-trust/10 text-slate-700 hover:text-trust border border-slate-200 text-xs font-medium whitespace-nowrap transition-colors shadow-2xs"
-                >
-                  {p.label}
-                </button>
-              ))}
+            {/* Quick Scenario Queries Bar (Horizontal scrollable chips with right fade hint) */}
+            <div className="relative border-b border-slate-100 bg-white shrink-0">
+              <div className="px-4 py-2 flex items-center space-x-2 overflow-x-auto no-scrollbar pr-12">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center space-x-1">
+                  <Sparkles className="w-3 h-3 text-saffron" />
+                  <span>Quick Prompts:</span>
+                </span>
+                {quickPrompts.map((p, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSend(p.query)}
+                    className="px-2.5 py-1 rounded-full bg-slate-50 hover:bg-trust/10 text-slate-700 hover:text-trust border border-slate-200 text-xs font-medium whitespace-nowrap transition-colors shadow-2xs shrink-0"
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none" />
             </div>
 
             {/* Chat Stream Messages (Spacious & High-Contrast) */}

@@ -60,6 +60,7 @@ const STEP_ICONS: Record<number, React.ReactNode> = {
 
 export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [showPlainLanguage, setShowPlainLanguage] = useState(true);
 
   if (!journey || !journey.steps || journey.steps.length === 0) return null;
@@ -79,99 +80,141 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
     }, 80);
   };
 
+  // Sleek compact bar when collapsed
+  if (isCollapsed) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-xl px-3.5 py-2 shadow-xs flex items-center justify-between gap-2 text-xs transition-all">
+        <div className="flex items-center space-x-2 min-w-0">
+          <div className="w-5 h-5 rounded bg-trust/10 text-trust flex items-center justify-center shrink-0">
+            <Sparkles className="w-3 h-3 text-trust" />
+          </div>
+          <span className="font-bold text-navy-900 text-xs truncate">
+            Conformity Roadmap: <span className="text-trust">{journey.product_name || "Applicable Standard"}</span>
+          </span>
+          <span className="hidden sm:inline text-[10px] font-mono bg-trust/10 text-trust px-2 py-0.5 rounded font-semibold shrink-0">
+            Stage {journey.current_stage || 2} of {journey.steps.length} Active
+          </span>
+        </div>
+
+        <div className="flex items-center space-x-2 shrink-0">
+          <button
+            onClick={() => setIsCollapsed(false)}
+            className="text-[11px] font-bold text-trust hover:text-navy-900 flex items-center space-x-1 px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+          >
+            <span>Show Stepper</span>
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+          <Link
+            href="/compliance"
+            className="text-[11px] text-slate-500 hover:text-navy-900 flex items-center space-x-1 px-1.5 py-1"
+            title="Open Full Compliance Roadmap"
+          >
+            <ExternalLink className="w-3 h-3" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden transition-all">
       {/* Header Bar */}
-      <div className="px-4 py-2.5 bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center space-x-2.5 min-w-0">
-          <div className="w-6 h-6 rounded-md bg-trust/10 text-trust flex items-center justify-center shrink-0">
-            <Sparkles className="w-3.5 h-3.5 text-trust" />
+      <div className="px-3.5 py-2 bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center space-x-2 min-w-0">
+          <div className="w-5 h-5 rounded bg-trust/10 text-trust flex items-center justify-center shrink-0">
+            <Sparkles className="w-3 h-3 text-trust" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-navy-900 truncate">
-                Conformity Roadmap: {journey.product_name || "Applicable Standard"}
+          <div className="min-w-0 flex items-center space-x-2">
+            <span className="text-xs font-bold text-navy-900 truncate">
+              Conformity Roadmap: {journey.product_name || "Applicable Standard"}
+            </span>
+            {journey.is_mandatory_certification && (
+              <span className="hidden md:inline-flex items-center space-x-1 bg-rose-50 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200 shrink-0">
+                <ShieldAlert className="w-3 h-3 text-rose-600" />
+                <span>MANDATORY STATUTORY</span>
               </span>
-              {journey.is_mandatory_certification && (
-                <span className="hidden sm:inline-flex items-center space-x-1 bg-rose-50 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200">
-                  <ShieldAlert className="w-3 h-3 text-rose-600" />
-                  <span>MANDATORY STATUTORY COMPLIANCE</span>
-                </span>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
         <div className="flex items-center space-x-2 shrink-0">
-          <span className="text-[11px] font-mono font-bold bg-trust/10 text-trust px-2.5 py-0.5 rounded border border-trust/20">
+          <span className="text-[10px] sm:text-[11px] font-mono font-bold bg-trust/10 text-trust px-2 py-0.5 rounded border border-trust/20">
             Stage {journey.current_stage || 2} of {journey.steps.length} Active
           </span>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-[11px] text-slate-600 hover:text-navy-900 font-medium px-2 py-1 rounded hover:bg-slate-100 flex items-center space-x-1 transition-colors"
+            className="text-[11px] text-slate-600 hover:text-navy-900 font-medium px-2 py-0.5 rounded hover:bg-slate-100 flex items-center space-x-1 transition-colors"
           >
-            <span>{isExpanded ? "Compact" : "View All 6 Stages"}</span>
+            <span>{isExpanded ? "Compact" : "View All 6"}</span>
             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            onClick={() => setIsCollapsed(true)}
+            className="text-[11px] text-slate-400 hover:text-navy-900 font-medium px-1.5 py-0.5 rounded hover:bg-slate-100"
+            title="Minimize Roadmap Banner"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
           </button>
           <Link
             href="/compliance"
-            className="text-[11px] text-trust hover:text-trust-dark font-semibold px-2 py-1 rounded hover:bg-trust/5 flex items-center space-x-1"
+            className="text-[11px] text-trust hover:text-trust-dark font-semibold px-1.5 py-0.5 rounded hover:bg-trust/5 flex items-center space-x-0.5"
             title="Open Full Compliance Roadmap"
           >
-            <span className="hidden md:inline">Full Matrix</span>
+            <span className="hidden md:inline">Matrix</span>
             <ExternalLink className="w-3 h-3" />
           </Link>
         </div>
       </div>
 
-      {/* Connected Horizontal Timeline with Clean, Full Labels */}
-      <div className="px-4 py-3.5 bg-white">
-        <div className="flex items-center justify-between relative px-2">
+      {/* Connected Horizontal Timeline with Clean, Wrap-Safe Labels */}
+      <div className="px-3 py-2.5 bg-white">
+        <div className="flex items-start justify-between relative px-1">
           {/* Background Connector Line */}
-          <div className="absolute left-6 right-6 top-3.5 h-0.5 bg-slate-200 z-0"></div>
+          <div className="absolute left-6 right-6 top-3 h-0.5 bg-slate-200 z-0"></div>
 
           {journey.steps.map((step) => {
             const isDone = step.status === "COMPLETED";
             const isCurrent =
               step.status === "IN_PROGRESS" || step.step_number === (journey.current_stage || 2);
-            const label =
-              step.short_label ||
-              STEP_FALLBACK_LABELS[step.step_number] ||
-              `Step 0${step.step_number}`;
+            
+            // Concise fallback label to prevent any horizontal collisions
+            const fallbackLabel = STEP_FALLBACK_LABELS[step.step_number] || `${step.step_number}. Step`;
+            const rawLabel = step.short_label || fallbackLabel;
+            const displayLabel = rawLabel.length > 15 ? fallbackLabel : rawLabel;
 
             return (
               <div
                 key={step.step_number}
-                className="flex flex-col items-center relative z-10 group cursor-pointer"
+                className="flex-1 min-w-0 max-w-[90px] sm:max-w-[110px] flex flex-col items-center relative z-10 group cursor-pointer px-0.5"
                 onClick={() => handleStepNodeClick(step.step_number)}
                 title={`Click to view Stage ${step.step_number}: ${step.title}`}
               >
                 {/* Node Circle */}
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all shadow-2xs ${
+                  className={`w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all shadow-2xs shrink-0 ${
                     isDone
                       ? "bg-emerald-600 text-white ring-2 ring-emerald-100"
                       : isCurrent
-                      ? "bg-trust text-white ring-4 ring-trust/20 animate-pulse scale-105"
+                      ? "bg-trust text-white ring-4 ring-trust/20 scale-105"
                       : "bg-white border-2 border-slate-300 text-slate-400 group-hover:border-slate-400"
                   }`}
                 >
                   {isDone ? (
-                    <CheckCircle2 className="w-4 h-4 text-white" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                   ) : isCurrent ? (
-                    <Clock className="w-3.5 h-3.5 text-white" />
+                    <Clock className="w-3 h-3 text-white" />
                   ) : (
                     <span>0{step.step_number}</span>
                   )}
                 </div>
 
-                {/* Full, legible Short Label without truncation cut-offs */}
+                {/* Clean Legible Label that never overlaps neighbors */}
                 <span
-                  className={`text-[11px] mt-1.5 font-semibold text-center whitespace-nowrap hidden sm:block ${
+                  className={`text-[10px] sm:text-[11px] mt-1 font-semibold text-center leading-tight block w-full truncate sm:whitespace-normal break-words ${
                     isCurrent ? "font-bold text-trust" : isDone ? "text-slate-800" : "text-slate-400"
                   }`}
                 >
-                  {label}
+                  {displayLabel}
                 </span>
               </div>
             );
@@ -180,9 +223,9 @@ export const BISJourneyStepper: React.FC<BISJourneyProps> = ({ journey }) => {
 
         {/* Active Stage Callout Bar */}
         {currentStep && (
-          <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1.5 text-xs">
             <div className="flex items-center space-x-2 text-slate-700 min-w-0">
-              <span className="font-bold text-navy-900 bg-slate-100 px-2 py-0.5 rounded text-[11px] shrink-0">
+              <span className="font-bold text-navy-900 bg-slate-100 px-2 py-0.5 rounded text-[10px] sm:text-[11px] shrink-0">
                 Stage {currentStep.step_number}: {currentStep.title}
               </span>
               <span className="text-slate-600 truncate hidden md:inline text-[11px]">

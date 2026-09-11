@@ -69,7 +69,7 @@ export const Sidebar: React.FC = () => {
                   : "text-slate-700 hover:bg-slate-100 hover:text-navy-900"
               }`}
             >
-              <div className="flex items-center space-x-2.5">
+              <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-saffron" : "text-slate-500"}`} />
                 <span className="truncate">{item.label}</span>
               </div>
@@ -90,13 +90,13 @@ export const Sidebar: React.FC = () => {
   );
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 h-[calc(100vh-85px)] sticky top-[85px]">
-      <div className="p-4 border-b border-slate-100">
+    <aside className="w-72 bg-white border-r border-slate-200 flex flex-col shrink-0 h-full overflow-hidden">
+      <div className="p-3.5 border-b border-slate-100">
         <div className="bg-navy-900 text-white rounded-lg p-3 shadow-inner">
           <p className="text-[10px] text-saffron font-bold uppercase tracking-wider">
             {t("sih_statement", "SIH Problem Statement 26107")}
           </p>
-          <p className="text-sm font-bold truncate">
+          <p className="text-sm font-bold truncate mt-0.5">
             {t("engine_name", "NexaStandards Engine")}
           </p>
           <span className="inline-block mt-1 text-[11px] bg-white/10 text-slate-200 font-medium px-2 py-0.5 rounded">

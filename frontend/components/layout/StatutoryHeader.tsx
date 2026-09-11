@@ -69,48 +69,48 @@ export const StatutoryHeader: React.FC<StatutoryHeaderProps> = ({
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-3 group">
-          <div className="w-10 h-10 rounded-md bg-gradient-to-br from-trust to-navy-800 flex items-center justify-center border border-trust-light shadow-sm group-hover:scale-105 transition-transform">
+      <div className="max-w-[1700px] w-full mx-auto px-4 md:px-6 py-2.5 flex items-center justify-between gap-4">
+        <Link href="/" className="flex items-center space-x-3 group shrink-0 min-w-0">
+          <div className="w-10 h-10 rounded-md bg-gradient-to-br from-trust to-navy-800 flex items-center justify-center border border-trust-light shadow-sm group-hover:scale-105 transition-transform shrink-0">
             <ShieldCheck className="w-6 h-6 text-saffron" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center space-x-2">
               <span className="font-bold text-lg tracking-tight text-white font-sans">
                 {t("app_title", "NexaStandards")}
               </span>
-              <span className="bg-bisgreen/20 text-bisgreen border border-bisgreen/40 text-[11px] px-2 py-0.5 rounded-full font-medium">
+              <span className="bg-bisgreen/20 text-bisgreen border border-bisgreen/40 text-[11px] px-2 py-0.5 rounded-full font-medium shrink-0">
                 {t("app_badge", "SIH26107 Assistant")}
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-normal">
+            <p className="text-xs text-slate-300 font-normal truncate max-w-[260px] lg:max-w-xs xl:max-w-md hidden sm:block">
               {t("app_subtitle", "From scattered standards documents to trusted, actionable compliance support.")}
             </p>
           </div>
         </Link>
 
-        <div className="hidden xl:flex items-center space-x-5">
-          <Link href="/assistant" className="text-sm font-medium text-slate-200 hover:text-saffron flex items-center space-x-1.5 transition-colors">
-            <Sparkles className="w-4 h-4 text-saffron" />
+        <div className="hidden xl:flex items-center space-x-3.5 lg:space-x-4 shrink-0">
+          <Link href="/assistant" className="text-xs lg:text-sm font-medium text-slate-200 hover:text-saffron flex items-center space-x-1.5 transition-colors shrink-0">
+            <Sparkles className="w-4 h-4 text-saffron shrink-0" />
             <span>{t("nav_assistant", "AI Assistant")}</span>
           </Link>
-          <Link href="/verify" className="text-sm font-medium text-slate-200 hover:text-saffron flex items-center space-x-1 transition-colors">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+          <Link href="/verify" className="text-xs lg:text-sm font-medium text-slate-200 hover:text-saffron flex items-center space-x-1 transition-colors shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse shrink-0"></span>
             <span>{t("nav_verify", "Verify Product")}</span>
           </Link>
-          <Link href="/standards" className="text-sm font-medium text-slate-200 hover:text-saffron transition-colors">
+          <Link href="/standards" className="text-xs lg:text-sm font-medium text-slate-200 hover:text-saffron transition-colors shrink-0">
             {t("nav_standards", "Standards & QCO")}
           </Link>
-          <Link href="/compliance" className="text-sm font-medium text-slate-200 hover:text-saffron transition-colors">
+          <Link href="/compliance" className="text-xs lg:text-sm font-medium text-slate-200 hover:text-saffron transition-colors shrink-0">
             {t("nav_compliance", "Compliance Roadmap")}
           </Link>
-          <Link href="/laboratories" className="text-sm font-medium text-slate-200 hover:text-saffron transition-colors">
+          <Link href="/laboratories" className="text-xs lg:text-sm font-medium text-slate-200 hover:text-saffron transition-colors shrink-0">
             {t("nav_labs", "Testing Labs")}
           </Link>
-          <Link href="/hallmarking" className="text-sm font-medium text-slate-200 hover:text-saffron transition-colors">
+          <Link href="/hallmarking" className="text-xs lg:text-sm font-medium text-slate-200 hover:text-saffron transition-colors shrink-0">
             {t("nav_hallmarking", "Hallmarking")}
           </Link>
-          <Link href="/grievance" className="text-sm font-medium text-slate-200 hover:text-saffron transition-colors">
+          <Link href="/grievance" className="text-xs lg:text-sm font-medium text-slate-200 hover:text-saffron transition-colors shrink-0">
             {t("nav_grievance", "Consumer Grievance")}
           </Link>
         </div>

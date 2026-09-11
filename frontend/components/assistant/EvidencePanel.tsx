@@ -53,22 +53,22 @@ export const EvidencePanel: React.FC<EvidencePanelProps> = ({ evidence, onSelect
         </span>
       </div>
 
-      <div className="space-y-2.5 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
+      <div className="space-y-2.5 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
         {evidence.map((item, idx) => (
           <div
             key={item.id || idx}
-            className="bg-slate-50 border-l-4 border-l-trust border border-slate-200 rounded-r-lg p-3 hover:shadow-sm transition-shadow"
+            className="bg-slate-50 border-l-4 border-l-trust border border-slate-200 rounded-r-lg p-3 hover:shadow-xs transition-shadow space-y-2"
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="font-mono text-xs font-bold text-navy-900 bg-slate-200 px-1.5 py-0.5 rounded">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="font-mono text-xs font-bold text-navy-900 bg-slate-200 px-2 py-0.5 rounded tracking-tight">
                   {item.standard_number}
                 </span>
-                <span className="ml-2 text-xs font-semibold text-trust">{item.clause}</span>
+                <span className="text-xs font-bold text-trust">{item.clause}</span>
               </div>
               <button
                 onClick={() => handleCopyCitation(item)}
-                className="text-slate-400 hover:text-navy-900 p-1 rounded hover:bg-slate-200 transition-colors"
+                className="text-slate-400 hover:text-navy-900 p-1 rounded hover:bg-slate-200 transition-colors shrink-0"
                 title="Copy Citation"
               >
                 {copiedId === item.id ? (
@@ -79,14 +79,16 @@ export const EvidencePanel: React.FC<EvidencePanelProps> = ({ evidence, onSelect
               </button>
             </div>
 
-            <p className="text-xs font-medium text-slate-800 mt-1.5 line-clamp-3 italic">
+            <p className="text-xs font-medium text-slate-700 leading-relaxed italic break-words">
               "{item.text}"
             </p>
 
-            <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
-              <span className="truncate max-w-[180px]">Page {item.page} | {item.document_title}</span>
+            <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 gap-2">
+              <span className="truncate flex-1 min-w-0" title={`Page ${item.page} | ${item.document_title}`}>
+                Page {item.page} · {item.document_title}
+              </span>
               {item.relevance_score && (
-                <span className="font-mono font-semibold text-saffron bg-saffron-light px-1.5 py-0.5 rounded text-[10px]">
+                <span className="font-mono font-bold text-saffron bg-saffron/15 border border-saffron/30 px-1.5 py-0.5 rounded text-[10px] shrink-0">
                   Score: {Math.round(item.relevance_score * 100)}%
                 </span>
               )}
