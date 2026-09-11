@@ -62,6 +62,16 @@ def seed():
             "revision_year": "2022"
         },
         {
+            "id": "std_17526",
+            "standard_number": "IS 17526:2021",
+            "title": "Domestic Stainless Steel Vacuum Flasks and Bottles - Specification",
+            "scope": "Specifies requirements for double-walled stainless steel vacuum flasks and bottles for domestic use, focusing on thermal retention, food hygiene, impact resistance, and cap seal integrity.",
+            "ics_code": "97.040.60",
+            "is_mandatory": True,
+            "scheme_type": "Scheme I (ISI Mark)",
+            "revision_year": "2021"
+        },
+        {
             "id": "std_302_2_15",
             "standard_number": "IS 302-2-15:2009",
             "title": "Safety of Household and Similar Electrical Appliances: Part 2 Particular Requirements, Section 15 Appliances for Heating Liquids",
@@ -528,8 +538,38 @@ def seed():
             "test_name": "Heavy Metal Migration & Food Contact Safety Test",
             "clause": "Clause 4.1 & IS 9845",
             "parameter": "Lead (Pb) < 0.01%, Cadmium (Cd) < 0.005%, Chromium (Cr) < 0.1%",
+            "test_type": "CHEMICAL",
+            "equipment_required": "Inductively Coupled Plasma Mass Spectrometer (ICP-MS)",
+            "min_sample_size": "3 units",
             "methodology": "Atomic Absorption Spectrophotometry (AAS) / ICP-MS after 4% acetic acid extraction at 60°C for 30 minutes.",
             "acceptance_criteria": "Zero detectable lead leach into liquid stimulant."
+        },
+        {
+            "id": "tst_17526_1",
+            "standard_id": "std_17526",
+            "test_name": "Thermal Insulation Efficiency Test",
+            "clause": "Clause 5.1",
+            "parameter": "Temperature Retention: Hot liquid >= 65°C after 6h; >= 45°C after 24h",
+            "methodology": "Calibrated temperature monitoring chamber over 6-hour and 24-hour retention period.",
+            "acceptance_criteria": "Temperature must not fall below 65°C after 6 hours from 95°C boiling fill."
+        },
+        {
+            "id": "tst_17526_2",
+            "standard_id": "std_17526",
+            "test_name": "Impact & Free Fall Drop Test",
+            "clause": "Clause 6.4",
+            "parameter": "Free fall drop from 1.0m height onto rigid concrete in 3 orientations without leak or vacuum loss",
+            "methodology": "Free fall drop testing on 5 units from 1.0 meter onto concrete anvil at room temperature.",
+            "acceptance_criteria": "Zero structural rupture, zero vacuum loss, and zero liquid seepage."
+        },
+        {
+            "id": "tst_17526_3",
+            "standard_id": "std_17526",
+            "test_name": "Food Grade Material Purity & Heavy Metal Leaching",
+            "clause": "Clause 4.2",
+            "parameter": "SS Grade 304/316 Food Contact: Lead < 0.01%, Cadmium < 0.005%",
+            "methodology": "AAS and ICP-MS testing after 4% acetic acid extraction under simulated food contact.",
+            "acceptance_criteria": "Heavy metal extraction within prescribed safety thresholds of IS 9845."
         },
         {
             "id": "tst_17803_2",
