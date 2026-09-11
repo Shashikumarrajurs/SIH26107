@@ -18,8 +18,78 @@ class UserModel(Base):
     role = Column(String(50), default="USER") # USER, ADMIN
     organization = Column(String(255), nullable=True)
     user_type = Column(String(50), nullable=True)
+    mobile = Column(String(50), nullable=True)
+    email_verified = Column(Boolean, default=False)
+    mobile_verified = Column(Boolean, default=False)
+    account_type = Column(String(50), default="MANUFACTURER") # INDIVIDUAL, MANUFACTURER, LABORATORY, CONSULTANT, CONSUMER
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    business_profile = relationship("BusinessProfileModel", uselist=False, back_populates="user", cascade="all, delete-orphan")
+    verification_records = relationship("VerificationRecordModel", back_populates="user", cascade="all, delete-orphan")
+    bis_licenses = relationship("BISLicenseModel", back_populates="user", cascade="all, delete-orphan")
+
+class BusinessProfileModel(Base):
+    """
+    Enterprise identity and industrial unit profile.
+    Separated from user credentials to distinguish account verification from business verification.
+    """
+    __tablename__ = "business_profiles"
+    
+    id = Column(String(64), primary_key=True, default=generate_uuid)
+    user_id = Column(String(64), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    business_name = Column(String(255), nullable=False)
+    business_type = Column(String(100), default="MSME") # MSME, Large Enterprise, Testing Lab, Consultant
+    gstin = Column(String(20), nullable=True)
+    udyam_number = Column(String(50), nullable=True)
+    pan = Column(String(20), nullable=True)
+    factory_address = Column(Text, nullable=True)
+    state = Column(String(100), nullable=True)
+    district = Column(String(100), nullable=True)
+    contact_number = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("UserModel", back_populates="business_profile")
+
+class VerificationRecordModel(Base):
+    """
+    Audit log of independent statutory verification checks.
+    Stores verification method, official source, reference token, and timestamp.
+    """
+    __tablename__ = "verification_records"
+    
+    id = Column(String(64), primary_key=True, default=generate_uuid)
+    user_id = Column(String(64), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    verification_type = Column(String(50), nullable=False) # EMAIL, MOBILE, GSTIN, UDYAM, PAN, BIS_LICENCE
+    status = Column(String(50), default="PENDING") # VERIFIED, PENDING, FAILED
+    source = Column(String(255), nullable=True) # e.g. "GST Portal API Gateway Sandbox", "SMS OTP Gateway"
+    reference_number = Column(String(100), nullable=True) # e.g. "GST-VREF-2026-90218"
+    verified_at = Column(String(50), nullable=True)
+    failure_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("UserModel", back_populates="verification_records")
+
+class BISLicenseModel(Base):
+    """
+    BIS Product Certification / CRS license tracked by user.
+    Coupled to public BIS Registry lookup for authenticity verification.
+    """
+    __tablename__ = "bis_licenses"
+    
+    id = Column(String(64), primary_key=True, default=generate_uuid)
+    user_id = Column(String(64), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    cm_l_number = Column(String(64), nullable=False) # e.g. CM/L-8400192
+    standard_number = Column(String(100), nullable=True) # e.g. IS 2347:2017
+    firm_name = Column(String(255), nullable=True)
+    status = Column(String(50), default="OPERATIVE") # OPERATIVE, EXPIRED, SUSPENDED, NOT_FOUND
+    validity_date = Column(String(50), nullable=True)
+    verification_status = Column(String(50), default="UNVERIFIED") # REGISTRY_MATCH, NOT_FOUND, UNVERIFIED, SUSPENDED
+    last_checked = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("UserModel", back_populates="bis_licenses")
 
 class ConversationModel(Base):
     __tablename__ = "conversations"

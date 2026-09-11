@@ -10,7 +10,7 @@ from backend.app.db.models import UserModel
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256", "bcrypt"], deprecated="auto")
 
 class RegisterRequest(BaseModel):
     email: str

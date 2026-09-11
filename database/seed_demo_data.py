@@ -16,19 +16,21 @@ from backend.app.db.models import (
     TestingRequirementModel, LaboratoryModel, LaboratoryCapabilityModel,
     StandardRelationshipModel, UserModel, BISRegistryModel,
     ConsumerGrievanceModel, QCOGazetteModel, ProductModel, ProductAliasModel,
-    StandardVersionModel, StandardAmendmentModel, SyncJobModel, SourceDocumentModel
+    StandardVersionModel, StandardAmendmentModel, SyncJobModel, SourceDocumentModel,
+    BusinessProfileModel, VerificationRecordModel, BISLicenseModel
 )
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256", "bcrypt"], deprecated="auto")
 
 
 def seed():
     init_db()
     db = SessionLocal()
     
-    # 1. Create Default Admin & Test User
-    if not db.query(UserModel).filter(UserModel.email == "admin@bis.gov.in").first():
+    # 1. Create Default Admin, Verified MSME Demo User, and Fresh Test User
+    admin = db.query(UserModel).filter(UserModel.email == "admin@bis.gov.in").first()
+    if not admin:
         admin = UserModel(
             id="usr_admin_001",
             email="admin@bis.gov.in",
@@ -36,18 +38,131 @@ def seed():
             hashed_password=pwd_context.hash("Admin@123"),
             role="ADMIN",
             organization="Bureau of Indian Standards",
-            user_type="Industry"
+            user_type="Industry",
+            mobile="+91 11 2323 0131",
+            email_verified=True,
+            mobile_verified=True,
+            account_type="CONSULTANT"
         )
-        user = UserModel(
+        db.add(admin)
+
+    demo_user = db.query(UserModel).filter(UserModel.email == "demo@msme.in").first()
+    if not demo_user:
+        demo_user = UserModel(
             id="usr_demo_001",
             email="demo@msme.in",
-            full_name="Rajesh Sharma (MSME Manufacturer)",
+            full_name="Rajesh Sharma",
             hashed_password=pwd_context.hash("Demo@123"),
             role="USER",
             organization="Sharma Metalcrafts Pvt Ltd",
-            user_type="MSME"
+            user_type="MSME",
+            mobile="+91 98765 43210",
+            email_verified=True,
+            mobile_verified=True,
+            account_type="MANUFACTURER"
         )
-        db.add_all([admin, user])
+        db.add(demo_user)
+    else:
+        demo_user.mobile = "+91 98765 43210"
+        demo_user.email_verified = True
+        demo_user.mobile_verified = True
+        demo_user.account_type = "MANUFACTURER"
+
+    # Fresh Blank User for Testing End-to-End Onboarding
+    fresh_user = db.query(UserModel).filter(UserModel.email == "newuser@example.com").first()
+    if not fresh_user:
+        fresh_user = UserModel(
+            id="usr_test_fresh",
+            email="newuser@example.com",
+            full_name="Shashikumar Raj Urs",
+            hashed_password=pwd_context.hash("Test@123"),
+            role="USER",
+            organization="ABC Manufacturing Pvt Ltd",
+            user_type="MSME",
+            mobile="+91 98450 12345",
+            email_verified=False,
+            mobile_verified=False,
+            account_type="MANUFACTURER"
+        )
+        db.add(fresh_user)
+
+    db.commit()
+
+    # Demo Business Profile for Rajesh Sharma
+    if not db.query(BusinessProfileModel).filter(BusinessProfileModel.user_id == "usr_demo_001").first():
+        demo_bprof = BusinessProfileModel(
+            id="bprof_demo_001",
+            user_id="usr_demo_001",
+            business_name="Sharma Metalcrafts Pvt Ltd",
+            business_type="MSME Manufacturer",
+            gstin="07AAAAA0000A1Z5",
+            udyam_number="UDYAM-UP-28-0012345",
+            pan="AAAAA0000A",
+            factory_address="Plot 45, Industrial Area Phase 2, Noida",
+            state="Uttar Pradesh",
+            district="Gautam Buddha Nagar",
+            contact_number="+91 98765 43210"
+        )
+        db.add(demo_bprof)
+
+    # Verification records for Rajesh Sharma (Tier 1 & Tier 3 verified)
+    if not db.query(VerificationRecordModel).filter(VerificationRecordModel.user_id == "usr_demo_001").first():
+        v_records = [
+            VerificationRecordModel(
+                id="vrec_001",
+                user_id="usr_demo_001",
+                verification_type="EMAIL",
+                status="VERIFIED",
+                source="Email OTP Service (NexaStandards Identity Gateway)",
+                reference_number="EML-VREF-2026-0911",
+                verified_at="2026-09-11 09:30:00"
+            ),
+            VerificationRecordModel(
+                id="vrec_002",
+                user_id="usr_demo_001",
+                verification_type="MOBILE",
+                status="VERIFIED",
+                source="SMS OTP Gateway (TRAI DLT Compliant)",
+                reference_number="SMS-VREF-2026-4421",
+                verified_at="2026-09-11 09:32:00"
+            ),
+            VerificationRecordModel(
+                id="vrec_003",
+                user_id="usr_demo_001",
+                verification_type="GSTIN",
+                status="VERIFIED",
+                source="GST Portal Common Registry API Gateway (Sandbox Mock)",
+                reference_number="GST-VREF-2026-90218",
+                verified_at="2026-09-11 10:15:00"
+            ),
+            VerificationRecordModel(
+                id="vrec_004",
+                user_id="usr_demo_001",
+                verification_type="UDYAM",
+                status="VERIFIED",
+                source="Ministry of MSME Udyam Registry Integration (Sandbox Mock)",
+                reference_number="UDYAM-VREF-2026-4412",
+                verified_at="2026-09-11 10:15:30"
+            )
+        ]
+        db.add_all(v_records)
+
+    # BIS License for Rajesh Sharma
+    if not db.query(BISLicenseModel).filter(BISLicenseModel.user_id == "usr_demo_001").first():
+        demo_lic = BISLicenseModel(
+            id="lic_demo_001",
+            user_id="usr_demo_001",
+            cm_l_number="CM/L-9102456",
+            standard_number="IS 2347:2017",
+            firm_name="Sharma Metalcrafts Pvt Ltd",
+            status="OPERATIVE",
+            validity_date="2028-06-30",
+            verification_status="REGISTRY_MATCH",
+            last_checked="2026-09-11 11:00:00"
+        )
+        db.add(demo_lic)
+
+    db.commit()
 
     # 2. Standards Data
     standards_data = [
@@ -850,6 +965,21 @@ def seed():
             "valid_from": "2018-01-01",
             "valid_to": "2023-12-31",
             "model_scope": "License not renewed upon expiration.",
+            "is_demo": True
+        },
+        {
+            "id": "reg_006",
+            "license_number": "CM/L-9102456",
+            "license_type": "ISI_CML",
+            "standard_number": "IS 2347:2017",
+            "manufacturer_name": "Sharma Metalcrafts Pvt Ltd",
+            "brand_name": "SharmaCraft",
+            "product_name": "Domestic Pressure Cookers (MSME Division)",
+            "factory_address": "Plot 45, Industrial Area Phase 2, Noida, Uttar Pradesh 201305",
+            "status": "OPERATIVE",
+            "valid_from": "2023-07-01",
+            "valid_to": "2028-06-30",
+            "model_scope": "Aluminum & Stainless Steel Pressure Cookers up to 10L capacity",
             "is_demo": True
         }
     ]
