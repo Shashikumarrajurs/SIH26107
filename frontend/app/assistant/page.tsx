@@ -138,7 +138,7 @@ export default function AssistantPage() {
       content: "Namaste! I am NexaStandards, your evidence-grounded AI assistant for Indian Standards and BIS services (SIH 2026 · Problem SIH26107). Ask about any product (e.g., 'mobile', 'pressure cooker', 'water bottle'), standard, testing parameter, or Gazette order to receive verified, clause-grounded regulatory guidance.",
       confidence: 1.0,
       evidence_status: "GROUNDED",
-      payload: null
+      payload: undefined
     }
   ]);
 
@@ -657,19 +657,19 @@ export default function AssistantPage() {
                             </span>
                           </div>
                           <p className="text-xs text-emerald-950 leading-relaxed font-medium">
-                            {msg.payload.persona_views?.consumer?.what_to_look_for || msg.payload.level1_consumer_view?.what_to_look_for || "Always verify that the product packaging bears the official BIS mark (ISI mark with 7-digit CM/L number, CRS with 8-digit R-number, or 6-digit Hallmark HUID) before purchase."}
+                            {msg.payload?.persona_views?.consumer?.what_to_look_for || msg.payload?.level1_consumer_view?.what_to_look_for || "Always verify that the product packaging bears the official BIS mark (ISI mark with 7-digit CM/L number, CRS with 8-digit R-number, or 6-digit Hallmark HUID) before purchase."}
                           </p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px]">
                             <div className="bg-white/80 p-2.5 rounded-lg border border-emerald-200">
                               <span className="font-bold text-emerald-900 block mb-0.5">How to Verify:</span>
                               <span className="text-slate-700 leading-snug block">
-                                {msg.payload.persona_views?.consumer?.how_to_verify || "Enter the 7-digit CM/L or 8-digit R-number into BIS CARE Mobile App or NexaStandards Scanner."}
+                                {msg.payload?.persona_views?.consumer?.how_to_verify || "Enter the 7-digit CM/L or 8-digit R-number into BIS CARE Mobile App or NexaStandards Scanner."}
                               </span>
                             </div>
                             <div className="bg-white/80 p-2.5 rounded-lg border border-emerald-200">
                               <span className="font-bold text-red-900 block mb-0.5">If Fake or Unmarked:</span>
                               <span className="text-slate-700 leading-snug block">
-                                {msg.payload.persona_views?.consumer?.if_not_verified || "File a statutory violation report under BIS Act 2016 Sections 14/15/29 through the NexaStandards Grievance generator."}
+                                {msg.payload?.persona_views?.consumer?.if_not_verified || "File a statutory violation report under BIS Act 2016 Sections 14/15/29 through the NexaStandards Grievance generator."}
                               </span>
                             </div>
                           </div>
@@ -692,13 +692,13 @@ export default function AssistantPage() {
 
                         <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5">
                           <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                            {msg.payload.persona_views?.startup?.summary || "Follow this verified 14-step pathway to manufacture, test, and obtain BIS certification without delays or unverified third-party claims."}
+                            {msg.payload?.persona_views?.startup?.summary || "Follow this verified 14-step pathway to manufacture, test, and obtain BIS certification without delays or unverified third-party claims."}
                           </p>
 
                           <div className="space-y-1.5 pt-1">
                             {[
                               { id: "s1", label: "1. Define Exact Product Model & Specifications", desc: "Lock down technical drawings and component BOM" },
-                              { id: "s2", label: "2. Identify Applicable Indian Standard", desc: `Standard: ${msg.payload.product_profile?.standard || "Operative IS Specification"}` },
+                              { id: "s2", label: "2. Identify Applicable Indian Standard", desc: `Standard: ${msg.payload?.product_profile?.standard || productProfile?.standard || "Operative IS Specification"}` },
                               { id: "s3", label: "3. Check Current QCO Mandate Status", desc: "Confirm whether Scheme I (ISI) or Scheme II (CRS) applies" },
                               { id: "s4", label: "4. Verify Effective Date & MSME Exemption", desc: "Check if micro/small enterprise grace period applies" },
                               { id: "s5", label: "5. Determine Conformity Scheme Route", desc: "Scheme I requires factory audit; Scheme II requires lab test report" },
@@ -755,7 +755,7 @@ export default function AssistantPage() {
                           </span>
                         </div>
 
-                        {msg.payload?.level2_technical_view?.evidence_citations?.length > 0 && (
+                        {msg.payload?.level2_technical_view?.evidence_citations && msg.payload.level2_technical_view.evidence_citations.length > 0 && (
                           <div className="space-y-1.5">
                             <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">
                               Official Clauses Cited:
@@ -785,7 +785,7 @@ export default function AssistantPage() {
                             <span className="text-[10px] font-extrabold text-emerald-800 uppercase block">
                               Currently Applicable:
                             </span>
-                            {msg.payload.compliance_graph.currently_applicable?.map((s: any) => (
+                            {msg.payload.compliance_graph?.currently_applicable?.map((s: any) => (
                               <div key={s.standard_number} className="font-mono font-bold text-navy-900">
                                 {s.standard_number}
                                 <span className="text-[10px] font-normal text-slate-600 block">{s.title}</span>
@@ -798,7 +798,7 @@ export default function AssistantPage() {
                             <span className="text-[10px] font-extrabold text-blue-800 uppercase block">
                               Related / Supporting:
                             </span>
-                            {msg.payload.compliance_graph.related_supporting?.map((s: any) => (
+                            {msg.payload.compliance_graph?.related_supporting?.map((s: any) => (
                               <div key={s.standard_number} className="font-mono font-bold text-navy-900">
                                 {s.standard_number}
                                 <span className="text-[10px] font-normal text-slate-600 block">{s.title}</span>
@@ -808,7 +808,7 @@ export default function AssistantPage() {
                         </div>
 
                         {/* Upcoming Transition Warning if present */}
-                        {msg.payload.compliance_graph.upcoming?.length > 0 && (
+                        {msg.payload.compliance_graph?.upcoming && msg.payload.compliance_graph.upcoming.length > 0 && (
                           <div className="bg-amber-50 border border-amber-300 p-3 rounded-lg text-amber-900 text-xs flex items-start space-x-2">
                             <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                             <div>
@@ -825,7 +825,7 @@ export default function AssistantPage() {
                     )}
 
                     {/* Actionable Next Steps */}
-                    {msg.payload?.actionable_next_steps?.length > 0 && (
+                    {msg.payload?.actionable_next_steps && msg.payload.actionable_next_steps.length > 0 && (
                       <div className="mt-3 pt-2.5 border-t border-slate-200/80 space-y-1.5">
                         <p className="font-bold text-[10px] uppercase tracking-wider text-saffron">
                           Recommended Actions:
