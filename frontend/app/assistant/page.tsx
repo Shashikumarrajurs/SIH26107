@@ -10,6 +10,7 @@ import { ProductProfileCard } from "@/components/assistant/ProductProfile";
 import { EvidencePanel, EvidenceItem } from "@/components/assistant/EvidencePanel";
 import { BISJourneyStepper } from "@/components/journey/BISJourney";
 import { sendMessage, getBISGlossary } from "@/lib/api";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   Send,
   Sparkles,
@@ -109,9 +110,9 @@ function FormattedMessage({ text }: { text: string }) {
 }
 
 export default function AssistantPage() {
+  const { language, setLanguage, t } = useLanguage();
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState("en");
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
   const [viewLevel, setViewLevel] = useState<"level1" | "level2">("level1");
   const [persona, setPersona] = useState<"consumer" | "startup" | "builder">("consumer");
@@ -135,12 +136,27 @@ export default function AssistantPage() {
     {
       id: "msg_welcome",
       sender: "assistant",
-      content: "Namaste! I am NexaStandards, your evidence-grounded AI assistant for Indian Standards and BIS services (SIH 2026 · Problem SIH26107). Ask about any product (e.g., 'mobile', 'pressure cooker', 'water bottle'), standard, testing parameter, or Gazette order to receive verified, clause-grounded regulatory guidance.",
+      content: t("assistant_welcome", "Namaste! I am NexaStandards, your evidence-grounded AI assistant for Indian Standards and BIS services (SIH 2026 · Problem SIH26107). Ask about any product (e.g., 'mobile', 'pressure cooker', 'water bottle'), standard, testing parameter, or Gazette order to receive verified, clause-grounded regulatory guidance."),
       confidence: 1.0,
       evidence_status: "GROUNDED",
       payload: undefined
     }
   ]);
+
+  useEffect(() => {
+    // When language changes, update welcome message if it's the only message in chat
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].id === "msg_welcome") {
+        return [
+          {
+            ...prev[0],
+            content: t("assistant_welcome", "Namaste! I am NexaStandards, your evidence-grounded AI assistant for Indian Standards and BIS services (SIH 2026 · Problem SIH26107). Ask about any product (e.g., 'mobile', 'pressure cooker', 'water bottle'), standard, testing parameter, or Gazette order to receive verified, clause-grounded regulatory guidance.")
+          }
+        ];
+      }
+      return prev;
+    });
+  }, [language, t]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -221,6 +237,10 @@ export default function AssistantPage() {
         setPersona(p);
         activeP = p;
       }
+      const l = params.get("lang");
+      if (l) {
+        setLanguage(l);
+      }
       const q = params.get("q");
       if (q) {
         handleSend(q, activeP);
@@ -297,7 +317,7 @@ export default function AssistantPage() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-100 overflow-hidden">
-      <StatutoryHeader currentLanguage={language} onLanguageChange={(l) => setLanguage(l)} />
+      <StatutoryHeader />
 
       <div className="flex-1 flex w-full overflow-hidden">
         {/* Navigation Sidebar */}
@@ -387,7 +407,7 @@ export default function AssistantPage() {
                     title="Consumer: Plain-language, packaging check & verification"
                   >
                     <ShoppingCart className="w-3 h-3" />
-                    <span>Consumer</span>
+                    <span>{t("role_consumer", "Consumer")}</span>
                   </button>
                   <button
                     onClick={() => setPersona("startup")}
@@ -399,7 +419,7 @@ export default function AssistantPage() {
                     title="Startup / MSME: 14-Point Practical Checklist & Manufacturing Route"
                   >
                     <Rocket className="w-3 h-3" />
-                    <span>Startup / MSME</span>
+                    <span>{t("role_startup", "Startup / MSME")}</span>
                   </button>
                   <button
                     onClick={() => setPersona("builder")}
@@ -411,7 +431,7 @@ export default function AssistantPage() {
                     title="Product Builder: Technical clauses, limits & testing standards"
                   >
                     <Factory className="w-3 h-3" />
-                    <span>Builder</span>
+                    <span>{t("role_builder", "Builder")}</span>
                   </button>
                 </div>
               </div>
@@ -426,11 +446,11 @@ export default function AssistantPage() {
                       ? "bg-purple-900 text-white border-purple-900 shadow-xs"
                       : "bg-white text-purple-900 hover:bg-purple-50 border-purple-200 shadow-2xs"
                   }`}
-                  title="What Does This BIS Term Mean? (Localized Glossary)"
+                  title={t("glossary_btn", "What Does This BIS Term Mean? (Localized Glossary)")}
                 >
                   <BookOpen className="w-3.5 h-3.5 text-purple-600" />
-                  <span className="hidden sm:inline">What Does This BIS Term Mean?</span>
-                  <span className="sm:hidden">BIS Glossary</span>
+                  <span className="hidden sm:inline">{t("glossary_btn", "What Does This BIS Term Mean?")}</span>
+                  <span className="sm:hidden">{t("glossary_btn", "BIS Glossary")}</span>
                 </button>
 
                 {/* Level 1 / Level 2 Switcher */}
@@ -882,15 +902,16 @@ export default function AssistantPage() {
                   type="text"
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Ask any natural language question about Indian Standards, BIS schemes, testing, or QCOs..."
+                  placeholder={t("input_placeholder", "Ask NexaStandards about any standard, QCO, or product...")}
                   className="flex-1 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 text-xs focus:outline-none focus:border-trust text-navy-900 font-medium shadow-2xs"
                 />
                 <button
                   type="submit"
                   disabled={isLoading}
                   className="bg-navy-900 hover:bg-navy-800 text-white px-5 py-2.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-colors shadow-xs"
+                  title={t("send_btn", "Ask NexaStandards")}
                 >
-                  <span>Ask AI</span>
+                  <span>{t("send_btn", "Ask NexaStandards")}</span>
                   <Send className="w-3.5 h-3.5 text-saffron" />
                 </button>
               </form>

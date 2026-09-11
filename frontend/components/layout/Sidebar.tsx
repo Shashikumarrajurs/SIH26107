@@ -11,44 +11,43 @@ import {
   MapPin,
   Gem,
   ShieldCheck,
-  Bookmark,
-  History,
   User,
   Settings,
   Database,
-  BarChart3,
   CheckCircle2,
   Layers
 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   const pillar1Items = [
-    { label: "AI Conversational Assistant", href: "/assistant", icon: MessageSquare, badge: "Multimodal" },
+    { label: t("side_assistant", "AI Conversational Assistant"), href: "/assistant", icon: MessageSquare, badge: "Multimodal" },
   ];
 
   const pillar2Items = [
-    { label: "Standards & QCO Explorer", href: "/standards", icon: FileText },
-    { label: "Standard Comparison Matrix", href: "/standards/compare", icon: Layers },
-    { label: "Certification Schemes", href: "/certification", icon: Award },
-    { label: "Testing Requirements", href: "/testing", icon: FlaskConical },
+    { label: t("side_standards", "Standards & QCO Explorer"), href: "/standards", icon: FileText },
+    { label: t("side_compare", "Standard Comparison Matrix"), href: "/standards/compare", icon: Layers },
+    { label: t("side_certification", "Certification Schemes"), href: "/certification", icon: Award },
+    { label: t("side_testing", "Testing Requirements"), href: "/testing", icon: FlaskConical },
   ];
 
   const pillar3Items = [
-    { label: "Product Verification (OCR)", href: "/verify", icon: ShieldCheck, badge: "OpenCV" },
-    { label: "Gold Hallmarking & HUID", href: "/hallmarking", icon: Gem },
+    { label: t("side_verify", "Product Verification (OCR)"), href: "/verify", icon: ShieldCheck, badge: "OpenCV" },
+    { label: t("side_hallmarking", "Gold Hallmarking & HUID"), href: "/hallmarking", icon: Gem },
   ];
 
   const pillar4Items = [
-    { label: "Compliance Roadmap", href: "/compliance", icon: CheckCircle2, badge: "Action" },
-    { label: "Testing Laboratory Matcher", href: "/laboratories", icon: MapPin },
-    { label: "BIS Grievance Assistant", href: "/grievance", icon: ShieldCheck },
+    { label: t("side_compliance", "Compliance Roadmap"), href: "/compliance", icon: CheckCircle2, badge: "Action" },
+    { label: t("side_labs", "Testing Laboratory Matcher"), href: "/laboratories", icon: MapPin },
+    { label: t("side_grievance", "BIS Grievance Assistant"), href: "/grievance", icon: ShieldCheck },
   ];
 
   const adminItems = [
-    { label: "Knowledge Specs & RAG", href: "/admin", icon: Database },
-    { label: "Document Registry & Ingestion", href: "/admin/documents", icon: FileText },
+    { label: t("side_admin_rag", "Knowledge Specs & RAG"), href: "/admin", icon: Database },
+    { label: t("side_admin_docs", "Document Registry & Ingestion"), href: "/admin/documents", icon: FileText },
   ];
 
   const renderNavGroup = (title: string, items: any[]) => (
@@ -94,22 +93,25 @@ export const Sidebar: React.FC = () => {
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 h-[calc(100vh-85px)] sticky top-[85px]">
       <div className="p-4 border-b border-slate-100">
         <div className="bg-navy-900 text-white rounded-lg p-3 shadow-inner">
-          <p className="text-[10px] text-saffron font-bold uppercase tracking-wider">SIH Problem Statement 26107</p>
-          <p className="text-sm font-bold truncate">NexaStandards Engine</p>
+          <p className="text-[10px] text-saffron font-bold uppercase tracking-wider">
+            {t("sih_statement", "SIH Problem Statement 26107")}
+          </p>
+          <p className="text-sm font-bold truncate">
+            {t("engine_name", "NexaStandards Engine")}
+          </p>
           <span className="inline-block mt-1 text-[11px] bg-white/10 text-slate-200 font-medium px-2 py-0.5 rounded">
-            Ask · Understand · Verify · Act
+            {t("tagline", "Ask · Understand · Verify · Act")}
           </span>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-        {renderNavGroup("1. Ask in One Place", pillar1Items)}
-        {renderNavGroup("2. Understand BIS Docs", pillar2Items)}
-        {renderNavGroup("3. Verify Products Fast", pillar3Items)}
-        {renderNavGroup("4. Take the Next Action", pillar4Items)}
-        {renderNavGroup("Administration", adminItems)}
+        {renderNavGroup(t("side_group1", "1. Ask in One Place"), pillar1Items)}
+        {renderNavGroup(t("side_group2", "2. Understand BIS Docs"), pillar2Items)}
+        {renderNavGroup(t("side_group3", "3. Verify Products Fast"), pillar3Items)}
+        {renderNavGroup(t("side_group4", "4. Take the Next Action"), pillar4Items)}
+        {renderNavGroup(t("side_group5", "5. Administration"), adminItems)}
       </div>
-
 
       <div className="p-3 border-t border-slate-200 bg-slate-50 space-y-1">
         <Link
@@ -117,14 +119,14 @@ export const Sidebar: React.FC = () => {
           className="flex items-center space-x-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-200/60 rounded-md"
         >
           <User className="w-4 h-4 text-slate-500" />
-          <span>User Profile</span>
+          <span>{t("side_profile", "User Profile")}</span>
         </Link>
         <Link
           href="/settings"
           className="flex items-center space-x-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-200/60 rounded-md"
         >
           <Settings className="w-4 h-4 text-slate-500" />
-          <span>Settings & LLM</span>
+          <span>{t("side_settings", "Settings & LLM")}</span>
         </Link>
       </div>
     </aside>

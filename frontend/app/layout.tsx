@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 export const metadata: Metadata = {
-  title: "BIS SmartAssist | AI Assistant for Indian Standards & BIS Services",
+  title: "NexaStandards | Evidence-Grounded AI Assistant for Indian Standards & BIS Services",
   description:
     "Describe your product. Understand your BIS journey. Evidence-grounded AI conversational assistant for Indian Standards, BIS certification, testing laboratories, and hallmarking. Built for SIH Problem Statement 26107.",
   keywords: [
     "BIS SmartAssist",
+    "NexaStandards",
     "Indian Standards",
     "BIS Certification",
     "ISI Mark",
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
   authors: [{ name: "SIH Team — BIS SmartAssist" }],
   robots: "noindex, nofollow", // Prototype — disable indexing
   openGraph: {
-    title: "BIS SmartAssist — Describe your product. Understand your BIS journey.",
+    title: "NexaStandards — AI Assistant for Indian Standards and BIS Services",
     description:
       "Evidence-grounded AI assistant for Indian Standards and BIS services. Supporting MSMEs, Industries, Startups, Consumers, and Laboratories.",
     type: "website",
@@ -44,7 +46,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body>
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

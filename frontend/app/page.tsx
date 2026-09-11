@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StatutoryHeader } from "@/components/layout/StatutoryHeader";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   ShieldCheck,
   Sparkles,
@@ -53,6 +54,7 @@ interface BISUpdateItem {
 
 export default function HomePage() {
   const router = useRouter();
+  const { language, t } = useLanguage();
   const [query, setQuery] = useState("");
   const [selectedPersona, setSelectedPersona] = useState<"consumer" | "startup" | "builder">("consumer");
   const [activeGraphTab, setActiveGraphTab] = useState<"mobile" | "cooker" | "bottle">("mobile");
@@ -82,17 +84,17 @@ export default function HomePage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      router.push(`/assistant?persona=${selectedPersona}&q=${encodeURIComponent(query)}`);
+      router.push(`/assistant?persona=${selectedPersona}&lang=${language}&q=${encodeURIComponent(query)}`);
     }
   };
 
   const quickActions = [
-    { label: "Search Standards", href: "/standards", icon: FileText, desc: "Explore operative IS specifications" },
-    { label: "Verify Product", href: "/verify", icon: Camera, desc: "Scan label or enter CM/L number", highlight: true },
-    { label: "Check BIS Mark", href: "/verify", icon: Award, desc: "Verify ISI Mark, CRS R-No, or Hallmark" },
-    { label: "Certification Help", href: "/compliance", icon: Layers, desc: "MSME 6-stage compliance roadmap" },
-    { label: "Find Laboratory", href: "/laboratories", icon: FlaskConical, desc: "BIS-recognized NABL testing facilities" },
-    { label: "Report Complaint", href: "/grievance", icon: ShieldCheck, desc: "Draft BIS Act 2016 grievance dossier" },
+    { label: t("qa_search_std", "Search Standards"), href: "/standards", icon: FileText, desc: t("qa_search_std_desc", "Explore operative IS specifications") },
+    { label: t("qa_verify_prod", "Verify Product"), href: "/verify", icon: Camera, desc: t("qa_verify_prod_desc", "Scan label or enter CM/L number"), highlight: true },
+    { label: t("qa_check_mark", "Check BIS Mark"), href: "/verify", icon: Award, desc: t("qa_check_mark_desc", "Verify ISI Mark, CRS R-No, or Hallmark") },
+    { label: t("qa_cert_help", "Certification Help"), href: "/compliance", icon: Layers, desc: t("qa_cert_help_desc", "MSME 6-stage compliance roadmap") },
+    { label: t("qa_find_lab", "Find Laboratory"), href: "/laboratories", icon: FlaskConical, desc: t("qa_find_lab_desc", "BIS-recognized NABL testing facilities") },
+    { label: t("qa_report_complaint", "Report Complaint"), href: "/grievance", icon: ShieldCheck, desc: t("qa_report_complaint_desc", "Draft BIS Act 2016 grievance dossier") },
   ];
 
   const graphExamples = {
@@ -239,10 +241,10 @@ export default function HomePage() {
 
               <div className="space-y-2">
                 <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
-                  Tell us what product you have or want to make.
+                  {t("hero_title", "Tell us what product you have or want to make.")}
                 </h1>
                 <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-3xl">
-                  NexaStandards translates complex BIS statutory regulations, Indian Standards, and Gazette QCOs into plain, actionable guidance tailored to your specific role.
+                  {t("hero_subtitle", "NexaStandards translates complex BIS statutory regulations, Indian Standards, and Gazette QCOs into plain, actionable guidance tailored to your specific role.")}
                 </p>
               </div>
 
@@ -253,7 +255,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => {
                     setSelectedPersona("consumer");
-                    router.push("/assistant?persona=consumer&q=Is+BIS+mandatory+for+pressure+cookers%3F");
+                    router.push(`/assistant?persona=consumer&lang=${language}&q=Is+BIS+mandatory+for+pressure+cookers%3F`);
                   }}
                   className={`p-4 rounded-xl text-left border transition-all flex flex-col justify-between space-y-3 group ${
                     selectedPersona === "consumer"
@@ -267,18 +269,18 @@ export default function HomePage() {
                         <ShoppingCart className="w-5 h-5" />
                       </div>
                       <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                        Plain Language
+                        {t("persona_consumer_badge", "Plain Language")}
                       </span>
                     </div>
                     <div className="text-sm font-extrabold text-white group-hover:text-saffron transition-colors">
-                      🛒 I am a Consumer
+                      🛒 {t("persona_consumer_title", "I am a Consumer")}
                     </div>
                     <p className="text-xs text-slate-300 leading-relaxed">
-                      "Check a product, BIS mark, licence or requirement"
+                      "{t("persona_consumer_desc", "Check a product, BIS mark, licence or requirement")}"
                     </p>
                   </div>
                   <div className="text-[11px] font-bold text-emerald-400 flex items-center space-x-1 pt-1 border-t border-slate-700/60">
-                    <span>Verify Mark & Packaging</span>
+                    <span>{t("persona_consumer_action", "Verify Mark & Packaging →")}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </button>
@@ -288,7 +290,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => {
                     setSelectedPersona("startup");
-                    router.push("/assistant?persona=startup&q=I+want+to+manufacture+pressure+cookers.+What+should+I+do%3F");
+                    router.push(`/assistant?persona=startup&lang=${language}&q=I+want+to+manufacture+pressure+cookers.+What+should+I+do%3F`);
                   }}
                   className={`p-4 rounded-xl text-left border transition-all flex flex-col justify-between space-y-3 group ${
                     selectedPersona === "startup"
@@ -302,18 +304,18 @@ export default function HomePage() {
                         <Rocket className="w-5 h-5" />
                       </div>
                       <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-saffron/20 text-saffron border border-saffron/40">
-                        14-Point Checklist
+                        {t("persona_startup_badge", "14-Point Checklist")}
                       </span>
                     </div>
                     <div className="text-sm font-extrabold text-white group-hover:text-saffron transition-colors">
-                      🚀 I am a Startup / MSME
+                      🚀 {t("persona_startup_title", "I am a Startup / MSME")}
                     </div>
                     <p className="text-xs text-slate-300 leading-relaxed">
-                      "Find what I need to manufacture or sell this product"
+                      "{t("persona_startup_desc", "Find what I need to manufacture or sell this product")}"
                     </p>
                   </div>
                   <div className="text-[11px] font-bold text-saffron flex items-center space-x-1 pt-1 border-t border-slate-700/60">
-                    <span>Startup Manufacturing Guide</span>
+                    <span>{t("persona_startup_action", "Startup Manufacturing Guide →")}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </button>
@@ -323,7 +325,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => {
                     setSelectedPersona("builder");
-                    router.push("/assistant?persona=builder&q=Which+standard+and+tests+apply+to+my+product%3F");
+                    router.push(`/assistant?persona=builder&lang=${language}&q=Which+standard+and+tests+apply+to+my+product%3F`);
                   }}
                   className={`p-4 rounded-xl text-left border transition-all flex flex-col justify-between space-y-3 group ${
                     selectedPersona === "builder"
@@ -337,18 +339,18 @@ export default function HomePage() {
                         <Factory className="w-5 h-5" />
                       </div>
                       <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
-                        Engineering Specs
+                        {t("persona_builder_badge", "Engineering Specs")}
                       </span>
                     </div>
                     <div className="text-sm font-extrabold text-white group-hover:text-saffron transition-colors">
-                      🏭 I am a Product Builder
+                      🏭 {t("persona_builder_title", "I am a Product Builder")}
                     </div>
                     <p className="text-xs text-slate-300 leading-relaxed">
-                      "Get standards, tests, documents and certification requirements"
+                      "{t("persona_builder_desc", "Get standards, tests, documents and certification requirements")}"
                     </p>
                   </div>
                   <div className="text-[11px] font-bold text-blue-400 flex items-center space-x-1 pt-1 border-t border-slate-700/60">
-                    <span>Clauses & Test Parameters</span>
+                    <span>{t("persona_builder_action", "Clauses & Test Parameters →")}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </button>
@@ -359,30 +361,34 @@ export default function HomePage() {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold uppercase tracking-wider text-saffron flex items-center space-x-1.5">
                     <Search className="w-3.5 h-3.5" />
-                    <span>Search Regulatory Intelligence (Active Role: {selectedPersona === "consumer" ? "🛒 Consumer" : selectedPersona === "startup" ? "🚀 Startup / MSME" : "🏭 Product Builder"})</span>
+                    <span>
+                      {t("search_role_prefix", "Search Regulatory Intelligence (Active Role: ")}
+                      {selectedPersona === "consumer" ? `🛒 ${t("role_consumer", "Consumer")}` : selectedPersona === "startup" ? `🚀 ${t("role_startup", "Startup / MSME")}` : `🏭 ${t("role_builder", "Product Builder")}`}
+                      {t("search_role_suffix", ")")}
+                    </span>
                   </label>
                   <div className="flex items-center space-x-1 text-[11px] bg-navy-950/70 px-2.5 py-1 rounded-lg border border-slate-700">
-                    <span className="text-slate-400">Switch Role:</span>
+                    <span className="text-slate-400">{t("switch_role", "Switch Role:")}</span>
                     <button
                       type="button"
                       onClick={() => setSelectedPersona("consumer")}
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedPersona === "consumer" ? "bg-emerald-500 text-navy-900" : "text-slate-300 hover:text-white"}`}
                     >
-                      Consumer
+                      {t("role_consumer", "Consumer")}
                     </button>
                     <button
                       type="button"
                       onClick={() => setSelectedPersona("startup")}
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedPersona === "startup" ? "bg-saffron text-navy-900" : "text-slate-300 hover:text-white"}`}
                     >
-                      Startup
+                      {t("role_startup", "Startup")}
                     </button>
                     <button
                       type="button"
                       onClick={() => setSelectedPersona("builder")}
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedPersona === "builder" ? "bg-blue-400 text-navy-900" : "text-slate-300 hover:text-white"}`}
                     >
-                      Builder
+                      {t("role_builder", "Builder")}
                     </button>
                   </div>
                 </div>
@@ -394,7 +400,7 @@ export default function HomePage() {
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="e.g. 'mobile', 'What standard applies to pressure cookers?', 'ಕನ್ನಡ: ಈ ಪ್ರೆಶರ್ ಕುಕ್ಕರ್ಗೆ BIS ಬೇಕಾ?'"
+                      placeholder={t("search_placeholder", "e.g. 'mobile', 'What standard applies to pressure cookers?'...")}
                       className="w-full bg-white text-navy-900 font-medium pl-11 pr-4 py-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-saffron shadow-sm"
                     />
                   </div>
@@ -402,7 +408,7 @@ export default function HomePage() {
                     type="submit"
                     className="bg-saffron hover:bg-saffron-high text-navy-900 font-extrabold px-7 py-3.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition-all shadow-md shrink-0"
                   >
-                    <span>Search Regulatory Intelligence</span>
+                    <span>{t("search_button", "Search Regulatory Intelligence →")}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </form>
@@ -410,24 +416,24 @@ export default function HomePage() {
 
               {/* Quick Preset Prompts including Multilingual and Judge Scenarios */}
               <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-slate-300">
-                <span className="font-semibold text-saffron">Try Instant Scenarios:</span>
+                <span className="font-semibold text-saffron">{t("try_scenarios", "Try Instant Scenarios:")}</span>
                 <button
                   type="button"
-                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&q=mobile`)}
+                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&lang=${language}&q=mobile`)}
                   className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition-colors font-mono"
                 >
                   "mobile"
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&q=Is+BIS+mandatory+for+pressure+cookers%3F`)}
+                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&lang=${language}&q=Is+BIS+mandatory+for+pressure+cookers%3F`)}
                   className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition-colors"
                 >
                   Pressure Cooker (IS 2347)
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&q=%E0%B2%88+%E0%B2%AA%E0%B3%8D%E0%B2%B0%E0%B3%86%E0%B2%B6%E0%B2%B0%E0%B3%8D+%E0%B2%95%E0%B3%81%E0%B2%95%E0%B3%8D%E0%B2%95%E0%B2%B0%E0%B3%8D%E0%B2%97%E0%B3%86+BIS+%E0%B2%AC%E0%B3%87%E0%B2%95%E0%B2%BE%3F`)}
+                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&lang=kn&q=%E0%B2%88+%E0%B2%AA%E0%B3%8D%E0%B2%B0%E0%B3%86%E0%B2%B6%E0%B2%B0%E0%B3%8D+%E0%B2%95%E0%B3%81%E0%B2%95%E0%B3%8D%E0%B2%95%E0%B2%B0%E0%B3%8D%E0%B2%97%E0%B3%86+BIS+%E0%B2%AC%E0%B3%87%E0%B2%95%E0%B2%BE%3F`)}
                   className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-emerald-300 font-semibold transition-colors"
                   title="Kannada: Does this pressure cooker need BIS?"
                 >
@@ -435,7 +441,7 @@ export default function HomePage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&q=%E0%A4%AE%E0%A5%8B%E0%A4%AC%E0%A4%BE%E0%A4%87%E0%A4%B2+%E0%A4%95%E0%A5%87+%E0%A4%B2%E0%A4%BF%E0%A4%8F+BIS+%E0%A4%9C%E0%A4%B0%E0%A5%82%E0%A4%B0%E0%A5%80+%E0%A4%B9%E0%A5%88+%E0%A4%95%E0%A5%8D%E0%A4%AF%E0%A4%BE%3F`)}
+                  onClick={() => router.push(`/assistant?persona=${selectedPersona}&lang=hi&q=%E0%A4%AE%E0%A5%8B%E0%A4%AC%E0%A4%BE%E0%A4%87%E0%A4%B2+%E0%A4%95%E0%A5%87+%E0%A4%B2%E0%A4%BF%E0%A4%8F+BIS+%E0%A4%9C%E0%A4%B0%E0%A5%82%E0%A4%B0%E0%A5%80+%E0%A4%B9%E0%A5%88+%E0%A4%95%E0%A5%8D%E0%A4%AF%E0%A4%BE%3F`)}
                   className="bg-navy-800 hover:bg-navy-700 border border-slate-700 px-3 py-1.5 rounded-lg text-amber-300 font-semibold transition-colors"
                   title="Hindi: Is BIS required for mobile?"
                 >
@@ -443,7 +449,7 @@ export default function HomePage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push(`/assistant?persona=builder&q=What+changed+in+the+latest+version+of+Clause+5.2%3F`)}
+                  onClick={() => router.push(`/assistant?persona=builder&lang=${language}&q=What+changed+in+the+latest+version+of+Clause+5.2%3F`)}
                   className="bg-purple-950/80 hover:bg-purple-900 border border-purple-500/60 text-purple-200 px-3 py-1.5 rounded-lg font-semibold transition-colors"
                 >
                   ⚖️ Judge Demo: Clause 5.2 Diff
@@ -454,7 +460,7 @@ export default function HomePage() {
                   className="bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-600/40 text-emerald-200 px-3 py-1.5 rounded-lg font-semibold flex items-center space-x-1 transition-colors"
                 >
                   <Camera className="w-3.5 h-3.5" />
-                  <span>Verify Mark / Photo</span>
+                  <span>{t("verify_photo_button", "Verify Mark / Photo")}</span>
                 </button>
               </div>
             </div>
